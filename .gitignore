@@ -1,0 +1,6 @@
+# Fichier généré / compilé
+*.class
+*.o
+*.out
+*.log
+*.stats

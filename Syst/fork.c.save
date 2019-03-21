@@ -1,0 +1,12 @@
+#include <stdio.h>
+#include <unistd.h>
+
+int main() 
+	int pid = fork();
+
+	printf("parent pid: %d\n", getpid());
+	printf("parent ppid: %d\n", getppid());
+	printf("child created with pid : %d\n", fork());
+
+	return 0;
+}

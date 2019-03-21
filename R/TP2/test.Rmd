@@ -1,0 +1,133 @@
+---
+title: "TP2"
+author: "Taniel Rémi"
+date: "14 mars 2019"
+output: word_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Analyse en composantes principales
+
+### QUESTION 1
+
+## Chargement de la base de donnée
+```{r}
+ocde <- read.table("ocde.txt", header=TRUE, sep = " ")
+```
+
+## Analyse descriptive
+
+# Dimension de la dataframe
+```{r}
+dim(ocde)
+```
+
+Notre dataframe contient donc 17 éléments pour 13 variables.
+
+# Affichage de quelques données
+
+Voici les premières lignes de notre dataframe :
+
+```{r}
+head(ocde)
+```
+
+On remarque qu'il n'y a qu'une seule variable qualitative, le code pays, on supprime donc cette donnée pour éviter de l'enlever à chaque fois dans nos prochains traitement :
+
+```{r}
+rownames(ocde) <- ocde$PAYS
+ocde <- ocde[,-1]
+```
+
+# Analyse descriptive univariée
+
+```{r}
+summary(ocde)
+```
+
+Analyse en boite à moustache, des données de la dataframe. Seulement la valeur de la variable "PIB" étant largement supérieur aux autres, on décide de la séparer, tout comme la variable "YEAR" qui a tout le temps la même valeur (cf. tableau au-dessus)
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(ocde$PIB, xlab="PIB (par habitant)")
+boxplot(ocde[,-c(6,1)], xlab="Autres")
+```
+
+```{r}
+par(mfrow=c(2,3))
+hist(ocde$PIB, ylab="Effectif", xlab="PIB (par habitant)", main="")
+hist(ocde$CHOM, ylab="Effectif", xlab="Taux de chomage", main="")
+hist(ocde$INFL, ylab="Effectif", xlab="Hausse des prix", main="")
+hist(ocde$APRI, ylab="Effectif", xlab="% Actif primaire", main="")
+hist(ocde$ASEC, ylab="Effectif", xlab="% Actif secondaire", main="")
+hist(ocde$MINF, ylab="Effectif", xlab="Mortalité infantile", main="")
+hist(ocde$RECC, ylab="Effectif", xlab="Recettes courantes (par hab)", main="")
+hist(ocde$FBCF, ylab="Effectif", xlab="Formation Brute De Capital Fixe (par hab)", main="")
+hist(ocde$NRJ, ylab="Effectif", xlab="Consommation d'énergie (par hab)", main="")
+hist(ocde$PROT, ylab="Effectif", xlab="Consommation de protéine animale (par hab)", main="")
+```
+
+
+### QUESTION 2
+
+Nous devrons utiliser les packages FactoMineR et factoextra, pour les utiliser, on les imports :
+
+```{r}
+library(FactoMineR)
+library(factoextra)
+```
+
+Nous allons faire dans un premier temps, une analyse en composante principales principales de la base de donnée sans réduire les données, on enlève également la variable "YEAR" :
+
+```{r}
+PCA(ocde[,-1], scale.unit=F)
+```
+
+Sans réduire les données, il est difficile d'analyser les résultats étant données que le PIB "explose" le reste des variables,
+L'axe principal monopolise les données (99,15% de part de variance), en l'état, le graphe n'est pas exploitable...
+
+### Question 4
+
+On se propose donc de relancer une analyse en composantes principales, mais cette fois-ci en réduisant les données :
+
+```{r}
+pca <- PCA(ocde[,-1], scale.unit=T)
+```
+
+# Valeurs propres
+
+On se décide d'afficher les valeurs propres, c'est à dire le pourcentage de variances expliqués pour chaque axe principal :
+
+```{r}
+fviz_eig(pca, addlabels = T)
+```
+
+# Cercle de correlations
+
+```{r}
+fviz_pca_var(pca, col.var = "black")
+```
+
+# Graphique des individus dans la nouvelle base
+
+```{r}
+fviz_pca_ind (res.pca, repel = T)
+```
+
+# Contribution des variables sur les 2 axes principaux
+
+```{r}
+# Contributions des variables sur l'axe 1
+fviz_contrib(pca, choice = "var", axes = 1, top = 10)
+# Contributions des variables sur l'axe 2
+fviz_contrib(pca, choice = "var", axes = 2, top = 10)
+```
+
+# Contribution des individus sur les 2 axes principaux
+
+```{r}
+fviz_contrib(res.pca, choice = "ind", axes = 1:2)
+```
