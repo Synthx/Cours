@@ -1,7 +1,6 @@
 class Compte {
     
-    public double credit;
-    public double debit;
+    public double credit, debit;
 
     public Compte() {
         this.credit = 0.;
@@ -9,8 +8,8 @@ class Compte {
     }
 
     public Compte(double credit) {
-        this.credit = credit;
-        this.debit = 0.;
+        this();
+        this.crediter(credit);
     }
 
     public void crediter(double x) {
