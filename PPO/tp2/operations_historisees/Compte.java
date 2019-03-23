@@ -20,8 +20,8 @@ class Compte {
     public double getCredit() {
         double sum = 0.;
 
-        for (int i = 0; i < this.dernierCredit; i++)
-            sum += this.credits[i];
+        for (double d : this.credits)
+            sum += d;
 
         return sum;
     }
@@ -29,8 +29,8 @@ class Compte {
     public double getDebit() {
         double sum = 0.;
 
-        for (int i = 0; i < this.dernierDebit; i++)
-            sum += this.debits[i];
+        for (double d : this.debits)
+            sum += d;
 
         return sum;
     }
