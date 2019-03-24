@@ -1,0 +1,256 @@
+---
+title: "TP2"
+author: "Taniel Rémi"
+date: "24 mars 2019"
+output:
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+### Analyse en composantes principales
+
+### QUESTION 1
+
+On commence par charger les données stockées dans le fichier ocde.txt et on les stocke dans la variable ocde :
+```{r}
+ocde <- read.table("ocde.txt", header=TRUE, sep = " ")
+```
+
+## Analyse descriptive
+
+On utilise la commande dim() pour obtenir les dimensions (nombre d'éléments et nombre de variables) de notre dataframe ocde:
+
+```{r}
+dim(ocde)
+```
+
+Notre dataframe contient donc 17 éléments pour 13 variables.
+
+Pour analyser nos données, on se décide d'afficher les premières lignes de celle-ci, pour cela on utilise la commande head(), Voici donc les premieres lignes de notre dataframe :
+
+```{r}
+head(ocde)
+```
+
+On remarque qu'il n'y a qu'une seule variable qualitative, la variable 'PAYS', on décide donc de remplacer le numéro des lignes par la variable 'PAYS' afin de mieux identifier les points dans les prochaines analyses :
+
+```{r}
+rownames(ocde) <- ocde$PAYS
+ocde <- ocde[,-1]
+```
+
+# Analyse descriptive univariée
+
+Pour chaque variable, on décide d'afficher les valeurs minimales et maximales, la médianne, la moyenne ainsi que le 1er et 3e quartile, on utilise pour cela la commande summary() :
+
+```{r}
+summary(ocde)
+```
+
+On remarque que la variable 'YEAR' possède toujours la même valeur: 1975, nous pouvons donc la retirer notre dataframe ocde :
+
+```{r}
+ocde <- ocde[,-1]
+```
+
+On remarque également que la variable 'PIB' possède des valeurs plus bien supérieurs aux restes des variables, cela risque donc de poser problème pour les prochains graphiques.
+
+# Analyse en boite à moustache 
+
+Pour chaque variable de notre dataframe ocde, on se décide d'afficher sa boite à moustache :
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(ocde$PIB, xlab="PIB (par habitant)")
+boxplot(ocde[,-c(5,7,8,9,10,11)], xlab="Autres (NATA, CHOM, APRI, ASEC, FBCF)")
+boxplot(ocde[,-c(1,2,3,4,5,6)], xlab="Autres (INFL, RECC, MINF, PROT, NRJ)")
+```
+
+# Analyse en histogramme
+
+Pareil que précedemment mais cette fois-ci en histogramme :
+
+```{r}
+par(mfrow=c(2,3))
+hist(ocde$PIB, ylab="Effectif", xlab="PIB (par habitant)", main="")
+hist(ocde$CHOM, ylab="Effectif", xlab="Taux de chomage", main="")
+hist(ocde$INFL, ylab="Effectif", xlab="Hausse des prix", main="")
+hist(ocde$APRI, ylab="Effectif", xlab="% Actif primaire", main="")
+hist(ocde$ASEC, ylab="Effectif", xlab="% Actif secondaire", main="")
+hist(ocde$MINF, ylab="Effectif", xlab="Mortalite infantile", main="")
+hist(ocde$RECC, ylab="Effectif", xlab="Recettes courantes (par hab)", main="")
+hist(ocde$FBCF, ylab="Effectif", xlab="Formation Brute De Capital Fixe (par hab)", main="")
+hist(ocde$NRJ, ylab="Effectif", xlab="Consommation d'energie (par hab)", main="")
+hist(ocde$PROT, ylab="Effectif", xlab="Consommation de proteine animale (par hab)", main="")
+```
+
+
+### QUESTION 2
+
+Nous devrons utiliser les packages FactoMineR et factoextra, pour les utiliser, nous devons les importer avec les commandes suivantes :
+
+```{r message=FALSE, warning=FALSE}
+library(FactoMineR)
+library(factoextra)
+```
+
+Nous allons dans un premier temps, faire une analyse en composante principales principales de la base de donnée sans réduire les donnees, pour cela on utilise la commande PCA() avec l'option 'scale.unit = FALSE' :
+
+```{r}
+pca <- PCA(ocde, scale.unit=F)
+```
+
+Sans réduire les données, il est difficile d'analyser les réultats etant donné que la variable 'PIB' "explose" le reste des variables,
+
+L'axe principal monopolise donc les données (99,15% de pourcentage d'inertie), en l'état, le graphe n'est pas exploitable, tout comme le reste de l'analyse en composantes principales...
+
+### Question 4
+
+On se propose donc de relancer une analyse en composantes principales, mais cette fois-ci en réduisant les données, on utilise donc le parametre 'scale.unit = TRUE' et on stocke le résultat de l'analyse dans la variable pca :
+
+```{r}
+pca <- PCA(ocde[,-1], scale.unit=T, graph=F)
+```
+
+## Fonctions d'analyse
+
+Dans cette partie, je ne donnerai que les fonctions et leurs résultats, aucune analyse ne sera faite sur les résultats de ces fonctions, elles seront faîtes dans les questions suivantes.
+
+# Valeurs propres
+
+On se décide d'afficher les valeurs propres, c'est a dire le pourcentage de variances (pourcentage d'inertie) expliqués pour chaque axe principal :
+
+```{r}
+get_eigenvalue(pca)
+```
+
+# Part d'inertie exliquée par chaque axe
+
+Pour afficher la partie d'inertie expliquée par chaque axe, on utilise la fonction suivante :
+
+```{r}
+fviz_eig(pca, addlabels=T)
+```
+
+
+# Coordonnées des individus dans la nouvelle base
+
+Pour afficher les coordonnées des individus dans la nouvelle base, on utilise la fonction suivante :
+
+```{r}
+fviz_pca_ind(pca, repel=T)
+```
+
+# Contribution des variables sur les 2 axes principaux
+
+```{r}
+# Contributions des variables sur l'axe 1
+fviz_contrib(pca, choice = "var", axes = 1, top = 10)
+# Contributions des variables sur l'axe 2
+fviz_contrib(pca, choice = "var", axes = 2, top = 10)
+```
+
+# Contribution des individus sur les 2 axes principaux
+
+```{r}
+fviz_contrib(pca, choice="ind", axes=1:2)
+```
+
+## Cercle de corrélations
+
+## Graphique
+
+Pour afficher le cercle de corrélations, on utilise la fonction suivante :
+
+```{r}
+fviz_pca_var(pca, col.var="black")
+```
+
+## Analyse
+
+# Axe 1
+
+Les variables PROT, NRJ, PIB et RECC sont posivitement corrélés entre elles et sont négativement corrélés aux variables APRI, INF et MINF.
+
+On peut donc déduire que plus un pays est riche (fort PIB, forte recette courante par habitant), il est beaucoup moins ? à l'inflation des prix, la mortalité infantile et possède un faible pourcentage d'actifs dans le secteur primaire.
+
+# Axe 2
+
+Les variables ASEC et FBCF sont positivement corrélés et négativement corrélés avec la variable CHOM.
+
+Dans ce cas, on peut déduire que plus le taux de chômage dans un pays est élevés, moins il possède un fort pourcentage d'actifs dans le secteur secondaire et de formation brute de capital fixe par habitant.
+
+### Question 5
+
+Pour déterminer le nombre d'axes à retenir, nous pouvons utiliser 3 critères, qui sont les suivants :
+- Nombre d'axes à retenir pour obtenir un pourcentage cumulé d'inertie de 80%
+- Critère du "coude"
+- Régle de "Kaiser"
+
+# Critère du "coude"
+
+Pour utiliser le critère du "coude", nous devons d'abord afficher le graphique representant la part de variance pour chaque dimension grace à la commande suivante :
+
+```{r}
+fviz_eig(pca)
+```
+
+Avec le critere du "coude", nous retenons les 3 premiers axes.
+
+# Seuil
+
+Concernant le critere du seuil, nous devons sommer chaque pourcentage d'inertie expliqué des x premieres dimensions jusqu'a atteindre 80%, pour cela on utilise :
+
+```{r}
+cumsum(pca$eig[,2])
+```
+
+Pour atteindre un seuil de 80% de pourcentage d'inertie, nous devons egalement retenir les 3 premiers axes
+
+# Regle de "Kaiser"
+
+Etant donné que notre ACP est normée, nous devons retenir les axes ayant une valeur propre supérieur a 1 :
+
+```{r}
+sum(pca$eig[,1] > 1)
+```
+
+Tout comme les 2 premiers critères, nous retenons 3 axes
+
+# Conclusion
+
+Les 3 critères ayant donné le même nombre d'axes a retenir, nous decidons de retenir 3 axes.
+
+### Question 6
+
+## Qualité de representation
+
+La qualité de representation des variables sur la carte de l'ACP s'appelle cos2, on peut visualiser ses valeurs avec la commande :
+
+```{r}
+pca$var$cos2
+```
+
+On utilise le package corrplot pour visualiser le cos2 de chaque variable sur chaque axe principal :
+
+```{r message=FALSE, warning=FALSE}
+library(corrplot)
+corrplot(pca$var$cos2, is.corr=F)
+```
+
+Un cos2 élevé (ici en bleu foncé) indique une bonne représentation de la variable sur l'axe principal en question, dans ce cas, sur le cercle de corrélations, la variable est proche de la circonférence du cercle.
+
+Inversement, un cos2 faible (ici en bleu clair) indique que la variable n'est pas parfaitement representé sur l'axe principal en question, dans ce cas, sur le cercle de corrélations, la variable est proche du centre du cercle.
+
+## Analyse des contributions
+
+# Contribution des variables aux axes
+
+Dans le cas de l'axe 1, ce sont les variables PIB, APRI, INFL, NRJ, RECC, PROT et MINF, tandis que pour l'axe 2 ce sont CHOM, ASEC, FBCF et PROT qui y contribuent le plus.
+
+# Contribution des individus aux axes
+
+test
