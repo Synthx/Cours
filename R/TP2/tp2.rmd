@@ -1,14 +1,9 @@
 ---
 title: "TP2"
-author: "Taniel Rémi"
-date: "24 mars 2019"
-output:
-  word_document: default
+author: "Taniel Remi"
+date: "25 mars 2019"
+output: word_document
 ---
-
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
 
 ### Analyse en composantes principales
 
@@ -90,11 +85,12 @@ hist(ocde$PROT, ylab="Effectif", xlab="Consommation de proteine animale (par hab
 
 ### QUESTION 2
 
-Nous devrons utiliser les packages FactoMineR et factoextra, pour les utiliser, nous devons les importer avec les commandes suivantes :
+Nous devrons utiliser les packages 'FactoMineR', 'factoextra' et 'ade4', pour les utiliser, nous devons les importer avec les commandes suivantes :
 
 ```{r message=FALSE, warning=FALSE}
 library(FactoMineR)
 library(factoextra)
+library(ade4)
 ```
 
 Nous allons dans un premier temps, faire une analyse en composante principales principales de la base de donnée sans réduire les donnees, pour cela on utilise la commande PCA() avec l'option 'scale.unit = FALSE' :
@@ -103,57 +99,138 @@ Nous allons dans un premier temps, faire une analyse en composante principales p
 pca <- PCA(ocde, scale.unit=F)
 ```
 
-Sans réduire les données, il est difficile d'analyser les réultats etant donné que la variable 'PIB' "explose" le reste des variables,
+Sans réduire les données, il est difficile d'analyser les réultats etant donné que la variable 'PIB' "explose" le reste des variables, en effect, cette variable n'a pas le même ordre de grandeur que les autres variables que nous souhaitons analyser.
 
 L'axe principal monopolise donc les données (99,15% de pourcentage d'inertie), en l'état, le graphe n'est pas exploitable, tout comme le reste de l'analyse en composantes principales...
 
-### Question 4
-
-On se propose donc de relancer une analyse en composantes principales, mais cette fois-ci en réduisant les données, on utilise donc le parametre 'scale.unit = TRUE' et on stocke le résultat de l'analyse dans la variable pca :
+Ceci est vérifé en affichant le graphique de contributions des variables par rapport aux 2 axes principaux :
 
 ```{r}
-pca <- PCA(ocde[,-1], scale.unit=T, graph=F)
+fviz_contrib(pca, choice="var", axes=c(1,2))
+```
+
+Comme dit précedemment la variable 'PIB' monopolise la contribution avec quasiment 100% de contribution.
+
+### Question 4
+
+On se propose donc de relancer une analyse en composantes principales, mais cette fois-ci en réduisant les données, on se décide également d'utiliser 3 variables qui calcule l'ACP d'une dataframe :
+- pca: calculée avec la fonction 'PCA()' du package 'FactoMineR'
+- pca_dudi: avec la fonction 'dudi.pca()' du package ''
+- pca_comp: avec la fonction 'prcomp()' du package 'ade4'
+
+```{r}
+pca <- PCA(ocde, scale.unit=T, graph=F)
+pca_dudi <- dudi.pca(ocde, scale=T, nf=11, scannf=F)
+pca_comp <- prcomp(ocde, scale=T)
 ```
 
 ## Fonctions d'analyse
 
-Dans cette partie, je ne donnerai que les fonctions et leurs résultats, aucune analyse ne sera faite sur les résultats de ces fonctions, elles seront faîtes dans les questions suivantes.
+Dans cette partie, je ne donnerai que les fonctions et leurs résultats, aucune analyse ne sera faite sur les résultats de ces fonctions, les analyses seront réalisées dans les questions suivantes.
 
 # Valeurs propres
 
-On se décide d'afficher les valeurs propres, c'est a dire le pourcentage de variances (pourcentage d'inertie) expliqués pour chaque axe principal :
+On se décide d'afficher les valeurs propres, c'est a dire le pourcentage de variances (pourcentage d'inertie) expliqué pour chaque axe principal :
+
+```{r eval=FALSE}
+# PCA()
+pca$eig[,1]
+# prcomp()
+pca_comp$sdev^2
+# dudi.pca()
+pca_dudi$eig
+```
+
+Pour afficher ces données avec quelque chose de plus graphique, on utilisera la fonction suivante (compatible avec les 3 fonctions calculant l'ACP) :
 
 ```{r}
-get_eigenvalue(pca)
+get_eigenvalue(pca_comp)
+```
+
+# Vecteurs propres
+
+Pour obtenir les vecteurs propres, on utilise :
+
+```{r eval=FALSE}
+# PCA()
+pca$svd$V[,2]
+# prcomp()
+pca_comp$rotation[,2]
+# dudi.pca()
+pca_dudi$c1[,2]
 ```
 
 # Part d'inertie exliquée par chaque axe
 
-Pour afficher la partie d'inertie expliquée par chaque axe, on utilise la fonction suivante :
+Pour obtenir la part d'inertie expliqué par chaque axe, on utilise :
+
+```{r eval=FALSE}
+# PCA()
+pca$eig[,2]/sum(pca$eig[,2])
+# prcomp()
+pca_comp$sdev^2/sum(pca_comp$sdev^2)
+# dudi.pca()
+pca_dudi$eig/sum(pca_dudi$eig)
+```
+
+Pour afficher ces valeurs, on utilisera la fonction suivante (toujours compatible avec les 3 méthodes) :
 
 ```{r}
 fviz_eig(pca, addlabels=T)
 ```
 
-
 # Coordonnées des individus dans la nouvelle base
 
-Pour afficher les coordonnées des individus dans la nouvelle base, on utilise la fonction suivante :
+Pour obtenir les coordonnées des individus dans la nouvelle base, on utilise :
 
-```{r}
-fviz_pca_ind(pca, repel=T)
+```{r eval=FALSE}
+# PCA()
+pca$ind$coord
+# prcomp()
+pca_comp$x
+# dudi.pca()
+pca_dudi$li
 ```
 
-# Contribution des variables sur les 2 axes principaux
+Pour afficher ces coordonnées, on utilisera la fonction suivante :
 
 ```{r}
-# Contributions des variables sur l'axe 1
-fviz_contrib(pca, choice = "var", axes = 1, top = 10)
-# Contributions des variables sur l'axe 2
-fviz_contrib(pca, choice = "var", axes = 2, top = 10)
+fviz_pca_ind(pca, repel=T, axes=c(1,2))
 ```
 
-# Contribution des individus sur les 2 axes principaux
+# Contribution des variables sur les axes principaux
+
+Pour obtenir les contributions des variables sur les axes principaux, on utilise :
+
+```{r eval=FALSE}
+# PCA()
+pca$var$contrib
+# prcomp()
+100*pca_comp$rotation^2/apply(pca_comp$rotation^2, 2, sum)
+# dudi.pca()
+100*pca_dudi$co^2/apply(pca_dudi$co^2, 2, sum)
+```
+
+Pour afficher ces contributions sur les 2 axes principaux, on utilisera la fonction suivante :
+
+```{r}
+fviz_contrib(pca, choice="var", axes=c(1,2))
+```
+
+# Contribution des individus sur les axes principaux
+
+Pour obtenir les contributions des individus sur les axes principaux, on utilise :
+
+```{r eval=FALSE}
+# PCA()
+pca$ind$contrib
+# prcomp()
+100*pca_comp$x^2/apply(pca_comp$x^2, 2, sum)
+# dudi.pca()
+100*pca_dudi$li^2/apply(pca_dudi$li^2, 2, sum)
+```
+
+Pour afficher ces contributions sur les 2 axes principaux, on utilisera la fonction suivante :
 
 ```{r}
 fviz_contrib(pca, choice="ind", axes=1:2)
@@ -166,22 +243,53 @@ fviz_contrib(pca, choice="ind", axes=1:2)
 Pour afficher le cercle de corrélations, on utilise la fonction suivante :
 
 ```{r}
-fviz_pca_var(pca, col.var="black")
+fviz_pca_var(pca, col.var="cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), axes=c(1,2), title="Cercle de corrélation sur les axes 1 et 2", repel=T)
+fviz_pca_var(pca, col.var="cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), axes=c(1,3), title="Cercle de corrélation sur les axes 1 et 3", repel=T)
 ```
 
 ## Analyse
 
 # Axe 1
 
-Les variables PROT, NRJ, PIB et RECC sont posivitement corrélés entre elles et sont négativement corrélés aux variables APRI, INF et MINF.
+Les variables 'PROT', 'NRJ', 'PIB' et 'RECC' sont posivitement corrélées entre elles et sont négativement corrélées aux variables 'APRI', 'INF', 'NATA' et 'MINF'.
 
-On peut donc déduire que plus un pays est riche (fort PIB, forte recette courante par habitant), il est beaucoup moins ? à l'inflation des prix, la mortalité infantile et possède un faible pourcentage d'actifs dans le secteur primaire.
+On peut donc déduire que plus un pays est riche (fort PIB, forte recette courante par habitant), il est beaucoup moins vulnérable à une hausse des prix, la mortalité infantile et possède un faible pourcentage d'actifs dans le secteur primaire, ainsi qu'un fort taux de natalité.
 
 # Axe 2
 
-Les variables ASEC et FBCF sont positivement corrélés et négativement corrélés avec la variable CHOM.
+Les variables 'ASEC' et 'FBCF' sont positivement corrélées et négativement corrélées avec la variable 'CHOM'.
 
 Dans ce cas, on peut déduire que plus le taux de chômage dans un pays est élevés, moins il possède un fort pourcentage d'actifs dans le secteur secondaire et de formation brute de capital fixe par habitant.
+
+# Axe 3
+
+Nous pouvons analyser "que" 3 variables dans le cas de l'axe 3, la variable 'FBCF' est négativement corrélée avec les variables 'MINF' et 'ASEC',
+
+Plus un pays a une mortalité infantile élevée, moins ses habitants produise du capital brute fixe.
+Néanmoins, l'axe 3 ne représentant que 12,7%, son analyse est beaucoup moins importante que l'axe 1 par exemple.
+
+# Graphique des individus dans la nouvelle base
+
+```{r}
+fviz_pca_ind(pca, col.ind = "cos2", gradient.cols = c("#00AFBB", "#E7B800", "#FC4E07"), repel=T)
+```
+
+On décide garder seulement les individus les mieux representés (ayant un cos2 élevé), ici nous pouvons garder les individus EU, CA, SU, PO, E et IT.
+
+Les individus les plus à droite possède un fort PIB, une forte consommation de de protéine animale (par habitant) par exemple, tandis que les pays les plus à gauche sur le graphe, possède un fort taux d'inflation et une forte mortalité infantile.
+
+Nous pouvons vérifier cela avec des boxplot, par exemple décidons d'afficher la Pologne (en rouge) et la Suede (en bleu) sur le boxplot du taux d'inflation 'INFL' et celui du 'PIB', on obtient :
+
+```{r}
+par(mfrow=c(1,2))
+boxplot(ocde$PIB, xlab="PIB (par habitant)")
+points(subset(ocde$PIB, rownames(ocde) == 'SU'), col='blue', pch=19)
+points(subset(ocde$PIB, rownames(ocde) == 'PO'), col='red', pch=19)
+boxplot(ocde$INFL, xlab="Hausse des prix")
+points(subset(ocde$INFL, rownames(ocde) == 'SU'), col='blue', pch=19)
+points(subset(ocde$INFL, rownames(ocde) == 'PO'), col='red', pch=19)
+```
+
 
 ### Question 5
 
@@ -192,13 +300,13 @@ Pour déterminer le nombre d'axes à retenir, nous pouvons utiliser 3 critères,
 
 # Critère du "coude"
 
-Pour utiliser le critère du "coude", nous devons d'abord afficher le graphique representant la part de variance pour chaque dimension grace à la commande suivante :
+Pour utiliser le critère du "coude", nous devons d'abord afficher le graphique representant la part de variance expliquée par chaque dimension grace à la fonction suivante :
 
 ```{r}
 fviz_eig(pca)
 ```
 
-Avec le critere du "coude", nous retenons les 3 premiers axes.
+Avec le critere du "coude", nous devons retenir les 3 premiers axes.
 
 # Seuil
 
@@ -208,17 +316,17 @@ Concernant le critere du seuil, nous devons sommer chaque pourcentage d'inertie 
 cumsum(pca$eig[,2])
 ```
 
-Pour atteindre un seuil de 80% de pourcentage d'inertie, nous devons egalement retenir les 3 premiers axes
+Pour atteindre un seuil de 80% de pourcentage d'inertie, nous devons également retenir les 3 premiers axes.
 
-# Regle de "Kaiser"
+# Règle de "Kaiser"
 
-Etant donné que notre ACP est normée, nous devons retenir les axes ayant une valeur propre supérieur a 1 :
+Etant donné que notre ACP est normée, nous devons retenir les axes ayant une valeur propre supérieure a 1 :
 
 ```{r}
 sum(pca$eig[,1] > 1)
 ```
 
-Tout comme les 2 premiers critères, nous retenons 3 axes
+Tout comme les 2 premiers critères, nous devons retenir 3 axes.
 
 # Conclusion
 
@@ -226,7 +334,7 @@ Les 3 critères ayant donné le même nombre d'axes a retenir, nous decidons de 
 
 ### Question 6
 
-## Qualité de representation
+## Qualité de la representation
 
 La qualité de representation des variables sur la carte de l'ACP s'appelle cos2, on peut visualiser ses valeurs avec la commande :
 
@@ -247,10 +355,23 @@ Inversement, un cos2 faible (ici en bleu clair) indique que la variable n'est pa
 
 ## Analyse des contributions
 
-# Contribution des variables aux axes
+Nous allons maintenant étudier les contributions des variables et des individus aux 3 axes principaux retenus.
+
+# Contribution des variables aux 3 axes principaux
+
+```{r}
+fviz_contrib(pca, choice="var", axes=1:3)
+```
+
+Les individus contribuant le plus aux 3 axes principaux sont celles au dessus de la ligne rouge en pointillé, dans notre cas, l'individu contribuant le plus aux 3 premiers axes est la Pologne avec quasiment 25% de contribution, le reste des individus sont : IR, EU, JA, CA, ES, NO, AL, SU.
+
 
 Dans le cas de l'axe 1, ce sont les variables PIB, APRI, INFL, NRJ, RECC, PROT et MINF, tandis que pour l'axe 2 ce sont CHOM, ASEC, FBCF et PROT qui y contribuent le plus.
 
-# Contribution des individus aux axes
+# Contribution des individus aux 3 axes principaux
 
-test
+```{r}
+fviz_contrib(pca, choice="ind", axes=1:3)
+```
+
+Les individus contribuant le plus aux 3 axes principaux sont celles au dessus de la ligne rouge en pointillé, dans notre cas, l'individu contribuant le plus aux 3 premiers axes est la Pologne avec quasiment 25% de contribution, le reste des individus sont : IR, EU, JA, CA, ES, NO, AL, SU.
