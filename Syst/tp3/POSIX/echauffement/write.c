@@ -3,12 +3,11 @@
 #include <fcntl.h>
 #include <unistd.h>
 
-int main()
-{
+int main() {
     char buf[] = "remi";
     int file;
 
-    file = open("mon_nom.txt", O_WRONLY|O_CREAT);
+    file = open("mon_nom.txt", O_WRONLY|O_CREAT, S_IRWXU);
     write(file, buf, sizeof(buf));
     close(file);
 

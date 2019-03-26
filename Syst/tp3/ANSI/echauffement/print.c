@@ -1,8 +1,7 @@
 #include <stdio.h>
 #define TAILLE_MAX 100
 
-void affichage(FILE* fic, int n)
-{
+void affichage(FILE* fic, int n) {
     char str[TAILLE_MAX];
     int i;
 
@@ -12,8 +11,7 @@ void affichage(FILE* fic, int n)
     }
 }
 
-int main()
-{
+int main() {
     FILE* file;
     int n;
 
