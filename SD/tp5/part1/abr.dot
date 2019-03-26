@@ -1,0 +1,6 @@
+digraph G {
+	56 -> 11 [label="gauche"];
+	11 -> 0 [label="gauche"];
+	11 -> 23 [label="droit"];
+	56 -> 89 [label="droit"];
+}
