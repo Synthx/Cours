@@ -5,37 +5,37 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-struct couple* new_couple(wstring cle, wstring satellite) {
+struct couple* new_couple(wstring clef, wstring satellite) {
     struct couple* c;
 
     c = malloc(sizeof(struct couple));
-    wcscpy(c->cle, cle);
+    wcscpy(c->clef, clef);
     wcscpy(c->satellite, satellite);
 
     return c;
 }
 
-struct abr* new_feuille(wstring cle, wstring satellite) {
+struct abr* new_feuille(wstring clef, wstring satellite) {
     struct abr* A;
 
     A = malloc(sizeof(struct abr));
-    A->valeur = new_couple(cle, satellite);
+    A->valeur = new_couple(clef, satellite);
     A->gauche = NIL;
     A->droit = NIL;
 
     return A;
 }
 
-struct abr* ajouter_abr(wstring cle, wstring satellite, struct abr* A) {
+struct abr* ajouter_abr(wstring clef, wstring satellite, struct abr* A) {
     // Si A est vide, on crée une feuille
     if (A == NIL)
-        return new_feuille(cle, satellite);
+        return new_feuille(clef, satellite);
     // Sinon on ajoute X à droite ou à gauche récursivement
     else {
-        if (wcscmp(A->valeur->cle, cle))
-            A->gauche = ajouter_abr(cle, satellite, A->gauche);
-        else
-            A->droit = ajouter_abr(cle, satellite, A->droit);
+        if (wcscmp(A->valeur->clef, clef) < 0)
+            A->gauche = ajouter_abr(clef, satellite, A->gauche);
+        else if (wcscmp(A->valeur->clef, clef) > 0)
+            A->droit = ajouter_abr(clef, satellite, A->droit);
 
         return A;
     }
@@ -66,7 +66,7 @@ bool est_feuille(struct abr* A) {
 void afficher_abr(struct abr* A) {
     if (A != NIL) {
         afficher_abr(A->gauche);
-        printf("%d ", A->valeur);
+        wprintf(L"(%ls:%ls) ", A->valeur->clef, A->valeur->satellite);
         afficher_abr(A->droit);
     }
 }
@@ -74,30 +74,30 @@ void afficher_abr(struct abr* A) {
 void affdot2(FILE* f, struct abr* A) {
     // ABR enfant à gauche
     if (A->gauche != NIL) {
-        fprintf(f, "\t%d -> %d [label=\"gauche\"];\n", A->valeur, A->gauche->valeur);
+        fwprintf(f, L"\t\"%ls\" -> \"%ls\" [label=\"gauche\"];\n", A->valeur->clef, A->gauche->valeur->clef);
         affdot2(f, A->gauche);
     }
     // ABR enfant à droite
     if (A->droit != NIL) {
-        fprintf(f, "\t%d -> %d [label=\"droit\"];\n", A->valeur, A->droit->valeur);
+        fwprintf(f, L"\t\"%ls\" -> \"%ls\" [label=\"droit\"];\n", A->valeur->clef, A->droit->valeur->clef);
         affdot2(f, A->droit);
     }
 }
 
-void afficher_dot_abr(struct abr* A) {
+void generer_dot_abr(struct abr* A) {
     FILE* file;
 
     file = fopen("abr.dot", "w");
-    fprintf(file, "digraph G {\n");
+    fwprintf(file, L"digraph G {\n");
 
     if (A == NIL)
-        fprintf(file, "\tNIL;\n");
+        fwprintf(file, L"\tNIL;\n");
     else if (est_feuille(A))
-        fprintf(file, "\t%d;\n", A->valeur);
+        fwprintf(file, L"\t%ls:%ls;\n", A->valeur->clef, A->valeur->satellite);
     else
         affdot2(file, A);
 
-    fprintf(file, "}\n");
+    fwprintf(file, L"}\n");
     fclose(file);
 }
 
@@ -105,6 +105,18 @@ void clear_abr(struct abr* A) {
     if (A != NIL) {
         clear_abr(A->gauche);
         clear_abr(A->droit);
+        free(A->valeur);
         free(A);
     }
+}
+
+wchar_t* rechercher_abr(struct abr* A, wstring clef) {
+    if (A == NIL)
+        return (wchar_t*)0;
+    else if (wcscmp(A->valeur->clef, clef) == 0)
+        return A->valeur->satellite;
+    else if (wcscmp(A->valeur->clef, clef) < 0)
+        return rechercher_abr(A->gauche, clef);
+    else if (wcscmp(A->valeur->clef, clef) > 0)
+        return rechercher_abr(A->droit, clef);
 }

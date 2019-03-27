@@ -1,6 +1,12 @@
 digraph G {
-	56 -> 11 [label="gauche"];
-	11 -> 0 [label="gauche"];
-	11 -> 23 [label="droit"];
-	56 -> 89 [label="droit"];
+	25 -> 12 [label="gauche"];
+	12 -> 9 [label="gauche"];
+	9 -> 8 [label="gauche"];
+	8 -> 1 [label="gauche"];
+	25 -> 42 [label="droit"];
+	42 -> 52 [label="droit"];
+	52 -> 99 [label="droit"];
+	99 -> 98 [label="gauche"];
+	99 -> 101 [label="droit"];
+	101 -> 100 [label="gauche"];
 }

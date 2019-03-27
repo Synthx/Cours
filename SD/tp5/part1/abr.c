@@ -74,7 +74,7 @@ void affdot2(FILE* f, struct abr* A) {
     }
 }
 
-void afficher_dot_abr(struct abr* A) {
+void generer_dot_abr(struct abr* A) {
     FILE* file;
 
     file = fopen("abr.dot", "w");

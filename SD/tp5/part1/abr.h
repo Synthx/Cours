@@ -16,6 +16,6 @@ extern int hauteur_abr(struct abr*);
 
 extern void afficher_abr(struct abr*);
 
-extern void afficher_dot_abr(struct abr*);
+extern void generer_dot_abr(struct abr*);
 
 extern void clear_abr(struct abr*);

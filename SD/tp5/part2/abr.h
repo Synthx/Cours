@@ -6,7 +6,7 @@
 typedef wchar_t wstring[MAXLEN];
 
 struct couple {
-    wstring cle;
+    wstring clef;
     wstring satellite;
 };
 
@@ -26,6 +26,8 @@ extern int hauteur_abr(struct abr*);
 
 extern void afficher_abr(struct abr*);
 
-extern void afficher_dot_abr(struct abr*);
+extern void generer_dot_abr(struct abr*);
 
 extern void clear_abr(struct abr*);
+
+extern wchar_t* rechercher_abr(struct abr*, wstring); 
