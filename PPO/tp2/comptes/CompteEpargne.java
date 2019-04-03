@@ -1,4 +1,4 @@
-class CompteEpargne extends Compte {
+public class CompteEpargne extends Compte {
     
     public double tauxInt;
 

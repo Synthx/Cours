@@ -1,4 +1,4 @@
-class Banque {
+public class Banque {
     
     public void crediter(Compte c, double valeur) {
         c.crediter(valeur);

@@ -1,6 +1,6 @@
-class Compte {
+public class Compte {
 
-    public static int MAX_OPERATIONS = 10;
+    public int MAX_OPERATIONS = 10;
 
     public int dernierCredit, dernierDebit;
     public double[] credits, debits;
@@ -64,8 +64,6 @@ class Compte {
     }
 
     public String toString() {
-        String res = "";
-
         return "Solde : " + this.solde() + "\nCredit : " + this.getCredit() + "\nDebit : " + this.getDebit();
     }
 }

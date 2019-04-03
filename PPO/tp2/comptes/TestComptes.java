@@ -1,7 +1,7 @@
 import java.lang.*;
 import java.util.*;
 
-class TestComptes {
+public class TestComptes {
 
     public static void main(String[] args) {
         Compte unCompte = new Compte();

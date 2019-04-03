@@ -1,4 +1,4 @@
-class Compte {
+public class Compte {
     
     public double credit, debit;
 
