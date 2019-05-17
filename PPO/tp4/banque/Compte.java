@@ -24,6 +24,11 @@ public class Compte {
         return this.credit - this.debit;
     }
 
+    public void virerVers(double x, Compte dest) {
+        this.debiter(x);
+        dest.crediter(x);
+    }
+
     public String toString() {
         String res = "";
 
