@@ -44,3 +44,43 @@ int min_distance(float *distances, int *mark, int n) {
 
     return res;
 }
+
+
+struct resultat bellman(struct graphe H, int r){
+    
+    int pere[n+1] = { 0 };
+    int pot[n+1] = { -1 };
+    int i;
+    struct maillon* M;
+    
+    pot[r] = 0;
+    pere[r] = r;
+    
+    M = H->head[r]->tete;
+    
+    for(i=0; i < H->head[r]->nbelem ; i++){
+
+        pot[M->value] = dist[0][M->value];
+        pere[M->value] = r;
+        M = M->next;
+            
+    }
+    
+    /* boucle sur les couches (couche 0 déjà réalisée) */
+    for(i=1; i<n+1; i++){
+            /* l'étape pour  parcourir tous les sommets de la couche est facultative car nous avons un seul et unique sommet par couche */
+            
+        for(j=0; j < H->head[i]->nbelem ; j++){
+            if(pot[i] + dist[i][M->value] < pot[M->value]){
+                pot[M->value] = pot[i] + dist[i][M->value];
+                pere[M->value] = i;
+                M = M->next;
+            }
+        }
+        
+    }
+    
+    
+    
+    return res;
+}
