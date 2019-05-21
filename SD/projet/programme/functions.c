@@ -45,6 +45,69 @@ int min_distance(float *distances, int *mark, int n) {
     return res;
 }
 
+void init_liste_succ (struct liste* L)
+{
+    L->tete = (struct int*)0;
+    L->nbelem = 0;
+}
+
+void ajout_maillon (struct liste* L, int j)
+{   
+    struct maillon* N;
+
+    N = (struct maillon*)malloc (sizeof (struct maillon));
+    assert (N != (struct maillon*)0);
+
+    N->value = j;       /* affectation de la valeur */
+    N->next = L->tete;
+    L->tete = N;
+    L->nbelem += 1;
+}
+
+struct graphe split(int* T, int Q, int n, float** dist, int* q){
+    
+    liste* head[n+1];
+    struct graphe succ;
+    
+    float cost; //distance parcourue par le véhicule courant
+    int load; //chargement du véhicule courant
+    int i,j;
+    
+    int dep = 0; //indice du dépot dans la matrice dist
+    
+    for(i=0;i<n;i++){
+        j = i;
+        load = 0;
+        
+        while(j>n || load >=Q){
+            
+            load += q[T[j]];
+            
+            init_liste_succ(struct liste* head[i]);
+            
+            if(i==j){
+                // T[j] est le 1er client qui sera livré par le véhicule courant
+                cost = dist[dep][T[i]] + dist[T[i]][dep]; //NB : distance aller = distance retour
+            } else {
+                // T[j] est ajouté en fin de livraison du véhicule courant
+                cost += -dist[T[j-1]][dep] + dist[T[j-1]][T[j]] + dist[T[j]][dep];
+            }
+            
+            if (load<=Q){
+                //La livraison ne peut pas être assurée par le véhicule courant car limite de capacité
+                // cout non stocké car déjà dans la matrice dist
+                
+                ajout_maillon(head[i-1], j);
+            }
+        
+        j += 1;
+        
+        }
+    }
+}
+    
+
+
 
 struct resultat bellman(struct graphe H, int r){
     
