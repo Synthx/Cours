@@ -21,7 +21,7 @@ public class CompteEpargne extends Compte {
     }
 
     public void debiter(double x) {
-        if (this.solde() > x)
+        if (this.solde() >= x)
             super.debiter(x);
     }
 

@@ -1,10 +1,10 @@
 public class Compte {
     
-    public double credit, debit;
+    public double credits, debits;
 
     public Compte() {
-        this.credit = 0.;
-        this.debit = 0.;
+        this.credits = 0.;
+        this.debits = 0.;
     }
 
     public Compte(double credit) {
@@ -13,15 +13,15 @@ public class Compte {
     }
 
     public void crediter(double x) {
-        this.credit += x;
+        this.credits += x;
     }
 
     public void debiter(double x) {
-        this.debit += x;
+        this.debits += x;
     }
 
     public double solde() {
-        return this.credit - this.debit;
+        return this.credits - this.debits;
     }
 
     public void virerVers(double x, Compte dest) {
@@ -30,8 +30,6 @@ public class Compte {
     }
 
     public String toString() {
-        String res = "";
-
-        return "Solde : " + this.solde() + "\nCredit : " + this.credit + "\nDebit : " + this.debit;
+        return "Solde : " + this.solde() + "\nCredit : " + this.credits + "\nDebit : " + this.debits;
     }
 }

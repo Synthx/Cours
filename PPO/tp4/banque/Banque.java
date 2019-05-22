@@ -27,7 +27,7 @@ public class Banque {
 	}
 	
 	public Compte getCompte(int i) {
-		if (i >= 0 && i <= this.nbComptes)
+		if (i >= 0 && i < this.nbComptes)
 			return this.comptes.get(i);
 		else {
 			System.out.println("compte inexistant");
@@ -108,6 +108,13 @@ public class Banque {
 		Compte compteSrc = this.getCompte(numSrc);
 		Compte compteDest = this.getCompte(numDest);
 
-		compteSrc.virerVers(x, compteDest);
+		if (compteSrc instanceof CompteEpargne) {
+			CompteEpargne compte = (CompteEpargne) compteSrc;
+			
+			if (compte.solde() >= x)
+				compte.virerVers(x, compteDest);
+		} else {
+			compteSrc.virerVers(x, compteDest);
+		}
 	}
 }
