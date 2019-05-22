@@ -1,0 +1,37 @@
+import java.util.*;
+
+public class Bibliotheque {
+
+	protected Map<String,Ouvrage> ouvrages = new TreeMap<String,Ouvrage>();
+	protected static int date = 20190522;
+ 
+	public void add(String code, Ouvrage o) {
+		this.ouvrages.put(code, o);
+	}
+
+	public int totalEmprunts() {
+		return this.ouvrages.size();
+	}
+
+	public void listing() {
+		System.out.println("La bibliotheque contient " + this.totalEmprunts() + " ouvrages:");
+		for (String code : ouvrages.keySet())
+			System.out.println(code + ": " + this.ouvrages.get(code).toString());
+	}
+
+	public void emprunter(String code) throws OuvrageInconnuException, NonDisponibleException {
+		try {
+			this.ouvrages.get(code).emprunter();
+		} catch (NullPointerException e) {
+			throw new OuvrageInconnuException();
+		}
+	}
+
+	public void retourner(String code) throws OuvrageInconnuException {
+		try {
+			this.ouvrages.get(code).retourner();
+		} catch (NullPointerException e) {
+			throw new OuvrageInconnuException();
+		}
+	}
+}
