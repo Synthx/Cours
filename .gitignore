@@ -8,3 +8,5 @@ R/tp2/tp2_files/*
 
 # IDE
 .vscode/
+.idea/
+*.iml

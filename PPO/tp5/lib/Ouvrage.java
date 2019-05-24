@@ -1,3 +1,5 @@
+package lib;
+
 public class Ouvrage {
 
 	protected String titre, auteur;
@@ -12,7 +14,7 @@ public class Ouvrage {
 	}
 
 	public String toString() {
-		return this.titre + " - " + this.auteur;
+		return this.titre + " - " + this.auteur + " - Emprunté " + this.compteur + " fois";
 	}
 
 	public void emprunter() throws NonDisponibleException {
