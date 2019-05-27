@@ -5,7 +5,7 @@ import java.util.stream.Collectors;
 
 public class Bibliotheque {
 
-	private Map<String,Ouvrage> ouvrages = new TreeMap<String,Ouvrage>();
+	protected Map<String,Ouvrage> ouvrages = new TreeMap<String,Ouvrage>();
 	protected static int date = 20190524;
  
 	public void add(String code, Ouvrage o) {

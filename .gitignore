@@ -4,7 +4,12 @@
 *.log
 *.stats
 *.dat
+*.yy.c
+
 R/tp2/tp2_files/*
+LT/tp1/exemple/exemple
+LT/tp1/conflits/conflits
+LT/tp1/lexic/lexic
 
 # IDE
 .vscode/
