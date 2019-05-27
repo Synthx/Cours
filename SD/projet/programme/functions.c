@@ -45,41 +45,21 @@ int min_distance(float *distances, int *mark, int n) {
     return res;
 }
 
-void init_liste_succ (struct liste* L)
-{
-    L->tete = (struct int*)0;
-    L->nbelem = 0;
-}
+struct liste * split(int *T, int Q, int n, float **dist, int *q) {
+    struct liste *succ;
+    int load, dep;
+    float cost;
 
-void ajout_maillon (struct liste* L, int j)
-{   
-    struct maillon* N;
-
-    N = (struct maillon*)malloc (sizeof (struct maillon));
-    assert (N != (struct maillon*)0);
-
-    N->value = j;       /* affectation de la valeur */
-    N->next = L->tete;
-    L->tete = N;
-    L->nbelem += 1;
-}
-
-struct graphe split(int* T, int Q, int n, float** dist, int* q){
+    // Allocation dynamique du tableau de liste chainée
+    succ = malloc(n * sizeof(struct liste));
+    // Indice du dépot dans la matrice dist
+    dep = 0;
     
-    liste* head[n+1];
-    struct graphe succ;
-    
-    float cost; //distance parcourue par le véhicule courant
-    int load; //chargement du véhicule courant
-    int i,j;
-    
-    int dep = 0; //indice du dépot dans la matrice dist
-    
-    for(i=0;i<n;i++){
-        j = i;
+    for(int i=0; i < n; i++) {
+        int j = i;
         load = 0;
         
-        while(j>n || load >=Q){
+        while(j > n || load >= Q) {
             
             load += q[T[j]];
             
@@ -106,10 +86,7 @@ struct graphe split(int* T, int Q, int n, float** dist, int* q){
     }
 }
     
-
-
-
-struct resultat bellman(struct graphe H, int r, int n){
+struct resultat bellman(struct graphe H, int r){
     
     int pere[n+1] = { 0 };
     int pot[n+1] = { -1 };
@@ -144,10 +121,6 @@ struct resultat bellman(struct graphe H, int r, int n){
         }
         
     }
-    
-    res->pot = pot;
-    res->pere = pere;
-    res->cout = pot[n];
     
     return res;
 }

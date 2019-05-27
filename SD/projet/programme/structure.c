@@ -20,3 +20,21 @@ void free_donnees_tab(struct donnees D) {
         free(D.distances[i]);
     free(D.distances);
 }
+
+void init_liste_succ(struct liste* L) {
+    L->tete = NIL;
+    L->nb_elem = 0;
+}
+
+void ajout_liste_succ(struct liste* L, int succ) {   
+    struct maillon* N;
+
+    N = (struct maillon*) malloc(sizeof(struct maillon));
+    assert(N != NIL);
+
+    N->value = succ;
+    N->next = L->tete;
+
+    L->tete = N;
+    L->nb_elem++;
+}
