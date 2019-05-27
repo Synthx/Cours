@@ -5,10 +5,12 @@
 
 void init_data(struct donnees *, int *);
 void read_data(FILE *, struct donnees *);
-void display_result(struct resultat);
+void display_T(int *, int);
+void display_H(struct liste *, int);
 
 int main() {
     struct donnees D; /* Structure contenant les données du problème */
+    struct liste *H;
     //struct graphe H; /* Graphe réultat de la procédure SPLIT */
     int *T, d; /* Résultat du Tour Géant */
     struct resultat res; /* Résultat du main */
@@ -16,16 +18,17 @@ int main() {
     // Initialisation de D avec les données du fichier
     init_data(&D, &d);
     
-    // Appel des différentes procédures
+    // Création du tour géant
     T = tour_geant(D, d);
-    //H = split(T, D.Q, D.n, D.distances, D.q);
-    //res = bellman(H, 0);
-    
-    // Affichage du résultat
-    display_result(res);
+    display_T(T, D.n);
+
+    // Création du sous graphe grâce à la procédure SPLIT
+    H = split(T, D);
+    display_H(H, D.n);
 
     // Libération de la mémoire
     free_donnees_tab(D);
+    free_tab_liste_succ(H, D.n + 1);
     free(T);
     
     return 0;
@@ -37,7 +40,9 @@ void init_data(struct donnees *D, int *d) {
 
     // Fichier de données
     printf("Fichier avec lequel lancer le programme :\n");
-    scanf("%s", filename);
+    //scanf("%s", filename);
+
+    filename = "exemple.dat";
 
     // Ouverture du fichier contenant les données
     file = fopen(filename, "r");
@@ -86,5 +91,28 @@ void read_data(FILE *file, struct donnees *D) {
     }
 }
 
-void display_result(struct resultat res) {
+void display_H(struct liste *H, int n) {
+    printf("Résultat du SPLIT :\n");
+
+    for (int i=0; i <= n; i++) {
+        printf("Sommet %d: ", i);
+
+        struct liste L = H[i];
+        struct maillon *current = L.tete;
+
+        while (current != NIL) {
+            printf("(%d: %f) ", current->value, current->cost);
+            current = current->next;
+        }
+
+        printf("\n");
+    }
+}
+
+void display_T(int *T, int n) {
+    printf("Résultat du grand tour :\n");
+    for (int i=0; i < n; i++)
+        printf("%d ", T[i]);
+
+    printf("\n");
 }

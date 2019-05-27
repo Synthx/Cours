@@ -11,6 +11,7 @@ struct resultat {
 
 struct maillon {
     int value;
+    float cost;
     struct maillon *next;
 };
 
@@ -23,5 +24,7 @@ struct liste {
 
 extern void init_donnees_tab(struct donnees *, int);
 extern void free_donnees_tab(struct donnees);
+extern void init_tab_liste_succ(struct liste *, int);
+extern void free_tab_liste_succ(struct liste *, int);
 extern void init_liste_succ(struct liste *);
-extern void ajout_liste_succ(struct liste *, int);
+extern void ajout_liste_succ(struct liste *, int, float);
