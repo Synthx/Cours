@@ -55,7 +55,6 @@ void ajout_liste_succ(struct liste *L, int succ, float cost) {
     struct maillon* N;
 
     N = malloc(sizeof(struct maillon));
-    assert(N != NIL);
 
     N->value = succ;
     N->cost = cost;

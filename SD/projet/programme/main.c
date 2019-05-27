@@ -11,9 +11,7 @@ void display_H(struct liste *, int);
 int main() {
     struct donnees D; /* Structure contenant les données du problème */
     struct liste *H;
-    //struct graphe H; /* Graphe réultat de la procédure SPLIT */
     int *T, d; /* Résultat du Tour Géant */
-    struct resultat res; /* Résultat du main */
     
     // Initialisation de D avec les données du fichier
     init_data(&D, &d);
@@ -25,6 +23,9 @@ int main() {
     // Création du sous graphe grâce à la procédure SPLIT
     H = split(T, D);
     display_H(H, D.n);
+
+    // Création du résultat
+    printf("Cout total : %f\n", bellman(H, d-1, D.n));
 
     // Libération de la mémoire
     free_donnees_tab(D);

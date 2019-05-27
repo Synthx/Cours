@@ -88,3 +88,44 @@ struct liste * split(int *T, struct donnees D) {
 
     return succ;
 }
+
+float bellman(struct liste *H, int r, int n) {
+    int pere[n + 1], i, j;
+    float  pot[n + 1], tot;
+    struct maillon* M;
+
+    tot =0.0;
+
+    for (i=0; i <= n; i++) {
+        pere[i] = 0;
+        pot[i] = -1;
+    }
+   
+    pot[r] = 0;
+    pere[r] = r;
+    M = H[r].tete;
+
+    /* boucle sur les couches (couche 0 déjà réalisée) */
+    for (i=1; i <= n; i++) {
+        /* l'étape pour  parcourir tous les sommets de la couche est facultative car nous avons un 
+        seul et unique sommet par couche */
+        M = H[i-1].tete;
+
+        while (M != NIL) {
+            if (pot[i] == -1) {
+                pere[i] = M->value;
+                pot[i] = M->cost;
+                tot += M->cost;
+            }
+            else if ((pot[i] + M->cost) < pot[M->value]) {
+                pot[M->value] = pot[i] + M->cost;
+                pere[M->value] = i;
+                tot += pot[M->value];
+            }
+
+            M = M->next;
+        }
+    }
+
+    return tot;
+}

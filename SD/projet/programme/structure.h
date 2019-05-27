@@ -5,10 +5,6 @@ struct donnees {
     float **distances;
 };
 
-struct resultat {
-    int cout_total;
-};
-
 struct maillon {
     int value;
     float cost;
