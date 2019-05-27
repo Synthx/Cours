@@ -109,12 +109,13 @@ struct graphe split(int* T, int Q, int n, float** dist, int* q){
 
 
 
-struct resultat bellman(struct graphe H, int r){
+struct resultat bellman(struct graphe H, int r, int n){
     
     int pere[n+1] = { 0 };
     int pot[n+1] = { -1 };
     int i;
     struct maillon* M;
+    struct resultat res;
     
     pot[r] = 0;
     pere[r] = r;
@@ -138,12 +139,15 @@ struct resultat bellman(struct graphe H, int r){
                 pot[M->value] = pot[i] + dist[i][M->value];
                 pere[M->value] = i;
                 M = M->next;
+                
             }
         }
         
     }
     
-    
+    res->pot = pot;
+    res->pere = pere;
+    res->cout = pot[n];
     
     return res;
 }
