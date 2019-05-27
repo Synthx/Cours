@@ -86,7 +86,7 @@ struct liste * split(int *T, int Q, int n, float **dist, int *q) {
     }
 }
     
-struct resultat bellman(struct graphe H, int r){
+struct resultat bellman(struct graphe H, int r, int n){
     
     int pere[n+1] = { 0 };
     int pot[n+1] = { -1 };
@@ -121,6 +121,9 @@ struct resultat bellman(struct graphe H, int r){
         }
         
     }
+    res->pot = pot;
+    res->pere = pere;
+    res->cout = pot[n];
     
     return res;
 }
