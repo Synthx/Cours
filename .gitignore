@@ -14,6 +14,9 @@ LT/tp1/conflits/conflits
 LT/tp1/lexic/lexic
 LT/tp2/exp/exp
 LT/tp2/expBis/expBis
+LT/tp3/exAtt/exAtt
+LT/tp3/exAttDef1/exAtt
+LT/tp3/exAttDefFinal1/exAtt
 
 # IDE
 .vscode/
