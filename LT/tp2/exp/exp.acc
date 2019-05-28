@@ -1,0 +1,30 @@
+/* exp.acc */
+
+%prelude{
+   /* Inclusion de bibliotheques C */
+   #include<stdio.h>
+   #include<malloc.h>
+
+   /* Action de fin d analyse */
+   void fin_analyse(){
+        printf("Fin de traitement \n") ;
+        printf("Syntaxe correcte \n") ;
+   }
+}
+
+%token PLUS, MOINS, MULT, DIV, PAROUV, PARFER, ENTIER;
+
+Root : Exp { fin_analyse(); };
+
+Exp : Exp PLUS Term
+    | Exp MOINS Term
+    | Term
+;
+Term : Term MULT Fact
+     | Term DIV Fact
+     | Fact
+;
+Fact : ENTIER
+     | PAROUV Exp PARFER
+     | MOINS Exp
+;

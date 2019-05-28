@@ -1,17 +1,24 @@
-# Fichier généré / compilé
+# Fichier généré
 *.o
 *.out
 *.log
 *.stats
 *.dat
 *.yy.c
+yygrammar.*
 
+# Fichier compilé
 R/tp2/tp2_files/*
 LT/tp1/exemple/exemple
 LT/tp1/conflits/conflits
 LT/tp1/lexic/lexic
+LT/tp2/exp/exp
+LT/tp2/expBis/expBis
 
 # IDE
 .vscode/
 .idea/
 *.iml
+
+# Compilateur
+LT/Compil/*
