@@ -6,6 +6,7 @@
 *.dat
 *.yy.c
 yygrammar.*
+*.class
 
 # Fichier compilé
 R/tp2/tp2_files/*
