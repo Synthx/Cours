@@ -1,0 +1,22 @@
+/* listeCC.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   #include "yystype.h"
+}
+
+/* Declaration des tokens */
+%token ID, PAROUV, PARFER;
+
+// Grammaire
+D : L { printf("Syntaxe correcte\n"); }
+;
+
+L : PAROUV S PARFER 
+  | ID<val> { printf("Un identificateur reconnu : %s\n", val.valChaine); }
+;
+
+S : L S
+  |
+;

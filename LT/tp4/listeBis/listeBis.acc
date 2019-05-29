@@ -1,0 +1,22 @@
+/* listeBis.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   #include "yystype.h"
+}
+
+/* Declaration des tokens */
+%token ID, PAROUV, PARFER;
+
+// Grammaire
+D : L<L_nb> { printf("Profondeur : %d\n", 2); printf("Nombre d'identificateur : %d\n", L_nb); }
+;
+
+L <%out int L_nb> : PAROUV S<S_nb> PARFER  { *L_nb = S_nb; }
+                  | ID<val> { *L_nb = 1; }
+;
+
+S <%out int S_nb> : L<L_nb> S<S1_nb> { *S_nb = L_nb + S1_nb; }
+  | { *S_nb = 0; }
+;

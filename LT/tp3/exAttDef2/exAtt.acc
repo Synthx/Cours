@@ -1,0 +1,21 @@
+/* exAtt.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   
+   void fin_analyse(){
+      printf("Syntaxe correcte\n");
+   }
+}
+
+/* Declaration des tokens */
+%token ENTIER, VIRG, PVIRG;
+
+// Grammaire
+D : ListeInt <LI_h, LI_s> PVIRG { fin_analyse(); }
+;
+
+ListeInt <%in int LI_h %out int LI_s> : ListeInt <LI1_h, LI1_s> VIRG ENTIER
+                          | ENTIER
+;

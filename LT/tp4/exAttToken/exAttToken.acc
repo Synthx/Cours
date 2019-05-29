@@ -1,0 +1,22 @@
+/* exAttToken.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   #include "yystype.h"
+}
+
+/* Declaration des tokens */
+%token ENTIER, REEL, VIRG, PVIRG;
+
+// Grammaire
+D : L { printf("Analyse terminée\n"); }
+;
+
+ListeInt : ListeInt VIRG ENTIER<val> { printf("Un entier reconnu : %d\n", val.valEnt); }
+           | ENTIER<val> { printf("Un entier reconnu : %d\n", val.valEnt); }
+;
+
+ListeReel : ListeReel VIRG REEL<val> { printf("Un réel reconnu : %f\n", val.valReel); }
+           | REEL<val> { printf("Un réel reconnu : %f\n", val.valReel); }
+;

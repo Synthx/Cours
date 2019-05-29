@@ -1,0 +1,22 @@
+/* exAtt.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   
+   void fin_analyse(int nbEntiers){
+      printf("Syntaxe correcte\n");
+      printf("Nombre d'entiers : %d\n", nbEntiers);
+   }
+}
+
+/* Declaration des tokens */
+%token ENTIER, VIRG, PVIRG;
+
+// Grammaire
+D : ListeInt <LI_nb> PVIRG { fin_analyse(LI_nb); }
+;
+
+ListeInt <%out int LI_nb> : ListeInt <LI1_nb> VIRG ENTIER { *LI_nb = LI1_nb + 1; }
+                          | ENTIER { *LI_nb = 1; }
+;

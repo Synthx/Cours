@@ -1,0 +1,24 @@
+/* exAttToken.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   #include "yystype.h"
+}
+
+/* Declaration des tokens */
+%token ENTIER, REEL, VIRG, PVIRG;
+
+// Grammaire
+D : ListeInt<LI_sum> PVIRG ListeReel<LR_sum> PVIRG { printf("Analyse terminée\n");
+                                                     printf("Somme des entiers : %d\n", LI_sum);
+                                                     printf("Somme des reels : %f\n", LR_sum); }
+;
+
+ListeInt <%out int LI_sum> : ListeInt<LI1_sum> VIRG ENTIER<val> { *LI_sum = LI1_sum + val.valEnt; }
+                           | ENTIER<val> { *LI_sum = val.valEnt; }
+;
+
+ListeReel <%out float LR_sum> : ListeReel<LR1_sum> VIRG REEL<val> { *LR_sum = LR1_sum + val.valReel; }
+                              | REEL<val> { *LR_sum = val.valReel; }
+;

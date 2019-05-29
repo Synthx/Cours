@@ -16,12 +16,18 @@ LT/tp2/exp/exp
 LT/tp2/expBis/expBis
 LT/tp3/exAtt/exAtt
 LT/tp3/exAttDef1/exAtt
-LT/tp3/exAttDefFinal1/exAtt
+LT/tp3/exAttDef2/exAtt
+LT/tp3/exAttFinal1/exAtt
+LT/tp3/exAttFinal2/exAtt
+LT/tp4/exAttToken/exAttToken
+LT/tp4/sommesSuites/sommes
+LT/tp4/listeCC/listeCC
+LT/tp4/listeBis/listeBis
 
 # IDE
 .vscode/
 .idea/
 *.iml
 
-# Compilateur
+# Compilateur Accent
 LT/Compil/*
