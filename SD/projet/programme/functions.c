@@ -2,6 +2,7 @@
 #include "functions.h"
 #include <stdlib.h>
 #include <stdio.h>
+#include <string.h>
 
 int *tour_geant(struct donnees G, int d) {
     int *T, i, index, current, mark[G.n];
@@ -78,9 +79,8 @@ struct liste * split(int *T, struct donnees D) {
             
             //La livraison ne peut pas être assurée par le véhicule courant car limite de capacité
             // cout non stocké car déjà dans la matrice dist
-            if (load <= D.Q) {
-                ajout_liste_succ(&succ[i-1], j, cost);
-            }
+            if (load <= D.Q)
+                ajout_liste_succ(&succ[i-1], i, j, cost);
         
             j += 1;
         }
@@ -89,10 +89,10 @@ struct liste * split(int *T, struct donnees D) {
     return succ;
 }
 
-float bellman(struct liste* H, int r, int n) {
-    float pot[n+1], pere[n+1], tot;
+void bellman(struct liste* H, int n, struct result *res) {
+    int i, j, pere[n+1], depart[n], finish[n];
     struct maillon *M;
-    int i, j;
+    float pot[n+1];
 
     // Initialisation
     for (i=0; i <= n; i++) {
@@ -100,15 +100,17 @@ float bellman(struct liste* H, int r, int n) {
         pot[i] = -1;
     }
 
-    tot = 0;
-    pot[r] = 0;
+    pot[0] = 0;
+    pere[0] = -1;
 
     // Propagation aux successeurs de la racine
-    M = H[r].tete;
+    M = H[0].tete;
     while (M != NIL) {
         i = M->value;
         pot[i] = M->cost;
-        pere[i] = r;
+        pere[i] = 0;
+        finish[i] = i;
+        depart[i] = M->depart;
 
         M = M->next;
     }
@@ -121,20 +123,25 @@ float bellman(struct liste* H, int r, int n) {
         while (M != NIL) {
             // j stocker l'indice du successeur
             j = M->value;
-            // Si potentiel à -1
-            if (pot[j] == -1) {
+            // Si potentiel à -1 ou inférieur à celui stocké
+            if (pot[j] == -1 || pot[j] > pot[i] + M->cost) {
                 pot[j] = pot[i] + M->cost;
                 pere[j] = i;
-            }
-            // Si il a déjà un potentiel, est-il inférieur ?
-            else if (pot[j] > pot[i] + M->cost) {
-                pot[j] = pot[i] + M->cost;
-                pere[j] = i;
+                finish[j] = j;
+                depart[j] = M->depart;
             }
             // Passage au successeur suivant
             M = M->next;
         }
     }
 
-    return pot[n];
+    init_result_tab(res);
+    // Sauvegarde du cout total
+    res->cost = pot[n];
+    // Sauvegarde du trajet
+    i = n;
+    while (pere[i] != -1) {
+        ajout_result_tab(res, depart[i], finish[i]);
+        i = pere[i];
+    }
 }
