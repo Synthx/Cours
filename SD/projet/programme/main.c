@@ -3,6 +3,8 @@
 #include <stdlib.h>
 #include "functions.h"
 
+#define MAX 100
+
 void init_data(struct donnees *, int *);
 void read_data(FILE *, struct donnees *);
 void display_T(int *, int);
@@ -25,7 +27,7 @@ int main() {
     display_H(H, D.n);
 
     // Création du résultat
-    printf("Cout total : %f\n", bellman(H, d-1, D.n));
+    printf("Cout total : %f\n", bellman(H, 0, D.n));
 
     // Libération de la mémoire
     free_donnees_tab(D);
@@ -36,14 +38,12 @@ int main() {
 }
 
 void init_data(struct donnees *D, int *d) {
-    char *filename;
+    char filename[MAX];
     FILE *file;
 
     // Fichier de données
-    printf("Fichier avec lequel lancer le programme :\n");
-    //scanf("%s", filename);
-
-    filename = "exemple.dat";
+    printf("Fichier avec lequel lancer le programme:\n");
+    scanf("%s", filename);
 
     // Ouverture du fichier contenant les données
     file = fopen(filename, "r");
