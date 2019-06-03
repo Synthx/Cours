@@ -89,43 +89,52 @@ struct liste * split(int *T, struct donnees D) {
     return succ;
 }
 
-float bellman(struct liste *H, int r, int n) {
-    int pere[n + 1], i, j;
-    float  pot[n + 1], tot;
-    struct maillon* M;
+float bellman(struct liste* H, int r, int n) {
+    float pot[n+1], pere[n+1], tot;
+    struct maillon *M;
+    int i, j;
 
-    tot =0.0;
-
+    // Initialisation
     for (i=0; i <= n; i++) {
         pere[i] = 0;
         pot[i] = -1;
     }
-   
+
+    tot = 0;
     pot[r] = 0;
-    pere[r] = r;
+
+    // Propagation aux successeurs de la racine
     M = H[r].tete;
+    while (M != NIL) {
+        i = M->value;
+        pot[i] = M->cost;
+        pere[i] = r;
 
-    /* boucle sur les couches (couche 0 déjà réalisée) */
-    for (i=1; i <= n; i++) {
-        /* l'étape pour  parcourir tous les sommets de la couche est facultative car nous avons un 
-        seul et unique sommet par couche */
-        M = H[i-1].tete;
+        M = M->next;
+    }
 
+    // Boucle principale
+    for (i=1; i <=n; i++) {
+        // i stocke l'indice du sommet qu'on propage
+        M = H[i].tete;
+        // Tant qu'on trouve un successeur
         while (M != NIL) {
-            if (pot[i] == -1) {
-                pere[i] = M->value;
-                pot[i] = M->cost;
-                tot += M->cost;
+            // j stocker l'indice du successeur
+            j = M->value;
+            // Si potentiel à -1
+            if (pot[j] == -1) {
+                pot[j] = pot[i] + M->cost;
+                pere[j] = i;
             }
-            else if ((pot[i] + M->cost) < pot[M->value]) {
-                pot[M->value] = pot[i] + M->cost;
-                pere[M->value] = i;
-                tot += pot[M->value];
+            // Si il a déjà un potentiel, est-il inférieur ?
+            else if (pot[j] > pot[i] + M->cost) {
+                pot[j] = pot[i] + M->cost;
+                pere[j] = i;
             }
-
+            // Passage au successeur suivant
             M = M->next;
         }
     }
 
-    return tot;
+    return pot[n];
 }
