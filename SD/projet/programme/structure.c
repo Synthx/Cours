@@ -50,12 +50,12 @@ void init_liste_succ(struct liste *L) {
     L->nb_elem = 0;
 }
 
-void ajout_liste_succ(struct liste *L, int depart, int succ, float cost) {   
+void ajout_liste_succ(struct liste *L, int start, int succ, float cost) {   
     struct maillon* N;
 
     N = malloc(sizeof(struct maillon));
     N->value = succ;
-    N->depart = depart;
+    N->start = start;
     N->cost = cost;
     N->next = L->tete;
 
@@ -68,11 +68,11 @@ void init_result_tab(struct result *res) {
     res->tete = NIL_POINT;
 }
 
-void ajout_result_tab(struct result *res, int depart, int finish) {
+void ajout_result_tab(struct result *res, int start, int finish) {
     struct maillon_point *N;
 
     N = malloc(sizeof(struct maillon_point));
-    N->depart = depart;
+    N->start = start;
     N->finish = finish;
     N->next = res->tete;
 
@@ -84,8 +84,8 @@ void free_result_tab(struct result *res) {
 
     current = res->tete;
     while (current != NIL_POINT) {
-        next = current;
+        next = current->next;
         free(current);
-        current = next->next;
+        current = next;
     }
 }

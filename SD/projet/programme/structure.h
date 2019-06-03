@@ -6,7 +6,7 @@ struct donnees {
 };
 
 struct maillon {
-    int value, depart;
+    int value, start;
     float cost;
     struct maillon *next;
 };
@@ -20,7 +20,7 @@ struct liste {
 };
 
 struct maillon_point {
-    int depart, finish;
+    int start, finish;
     struct maillon_point *next;
 };
 

@@ -91,7 +91,7 @@ void display_res(struct result res, int *T) {
     current = res.tete;
     while (current != NIL_POINT) {
         printf("(");
-        for (i=current->depart - 1; i <= current->finish - 1; i++) {
+        for (i=current->start - 1; i <= current->finish - 1; i++) {
             if (i == current->finish - 1)
                 printf("%d", T[i]);
             else

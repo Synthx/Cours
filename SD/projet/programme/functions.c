@@ -19,7 +19,7 @@ int *tour_geant(struct donnees G, int d) {
     i = 0;
 
     // Tant qu'il reste un sommet non exploré
-    while (i < G.n) {
+    while (i < G.n -1) {
         current = T[i];
         // On le marque à Vrai dans mark
         mark[current] = 1;
@@ -41,7 +41,7 @@ int min_distance(float *distances, int *mark, int n, int current) {
     dist = -1;
 
     for (i=1; i < (n+1); i++) {
-        if (current != i && mark[i] != 1 && (dist == -1 || (distances[i] != -1 && distances[i] < dist))) {
+        if (current != i && !mark[i] && (dist == -1 || (distances[i] != -1 && distances[i] < dist))) {
             res = i;
             dist = distances[i];
         }
@@ -63,7 +63,7 @@ struct liste * split(int *T, struct donnees D) {
     // Initialisation de la liste chainée des successeurs du sommet i
     init_tab_liste_succ(succ, D.n + 1);
     
-    for (int i=1; i <= D.n; i++) {
+    for (i=1; i <= D.n; i++) {
         j = i;
         load = 0;
         
@@ -90,7 +90,7 @@ struct liste * split(int *T, struct donnees D) {
 }
 
 void bellman(struct liste* H, int n, struct result *res) {
-    int i, j, pere[n+1], depart[n], finish[n];
+    int i, j, pere[n+1], start[n], finish[n];
     struct maillon *M;
     float pot[n+1];
 
@@ -110,7 +110,7 @@ void bellman(struct liste* H, int n, struct result *res) {
         pot[i] = M->cost;
         pere[i] = 0;
         finish[i] = i;
-        depart[i] = M->depart;
+        start[i] = M->start;
 
         M = M->next;
     }
@@ -128,7 +128,7 @@ void bellman(struct liste* H, int n, struct result *res) {
                 pot[j] = pot[i] + M->cost;
                 pere[j] = i;
                 finish[j] = j;
-                depart[j] = M->depart;
+                start[j] = M->start;
             }
             // Passage au successeur suivant
             M = M->next;
@@ -141,7 +141,7 @@ void bellman(struct liste* H, int n, struct result *res) {
     // Sauvegarde du trajet
     i = n;
     while (pere[i] != -1) {
-        ajout_result_tab(res, depart[i], finish[i]);
+        ajout_result_tab(res, start[i], finish[i]);
         i = pere[i];
     }
 }
