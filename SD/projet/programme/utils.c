@@ -84,13 +84,14 @@ void display_T(int *T, int n) {
 
 void display_res(struct result res, int *T) {
     struct maillon_point *current;
-    int i;
+    int i, j;
 
     printf("\nTrajet: [\n");
 
+    j = 1;
     current = res.tete;
     while (current != NIL_POINT) {
-        printf("(");
+        printf("Camion %d : (", j);
         for (i=current->start - 1; i <= current->finish - 1; i++) {
             if (i == current->finish - 1)
                 printf("%d", T[i]);
@@ -100,6 +101,7 @@ void display_res(struct result res, int *T) {
         printf(")\n");
 
         current = current->next;
+        j++;
     }
 
     printf("]\n");
