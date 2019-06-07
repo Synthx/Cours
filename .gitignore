@@ -9,6 +9,9 @@ yygrammar.*
 *.class
 *.zip
 
+# Fichier exclu
+!LT/projet/yygrammar.h
+
 # Fichier compilé
 R/tp2/tp2_files/*
 LT/tp1/exemple/exemple

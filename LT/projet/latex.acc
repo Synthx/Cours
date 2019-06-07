@@ -1,0 +1,14 @@
+/* latex.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+}
+
+/* Declaration des tokens */
+%token BEGIN, TITLE, AUTHOR, DATE, MAKETITLE, SECTION, SUBSECTION,
+SUBSUBSECTION, TEXTBF, TEXTIT, ITEMIZE, ENUMERATE, ITEM, BACKSLASH,
+LDOTS, WORD;
+
+// Grammaire
+D : MOT
