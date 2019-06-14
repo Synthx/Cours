@@ -5,7 +5,7 @@
    #include <malloc.h>
 
    void fin_analyse() {
-      printf("syntaxe ok");
+      printf("syntaxe ok\n");
    }
 }
 
@@ -15,4 +15,35 @@ SUBSUBSECTION, TEXTBF, TEXTIT, ITEMIZE, ENUMERATE, ITEM, BACKSLASH,
 LDOTS, WORD, END, ACC;
 
 /* Grammaire */
-S : TITLE | WORD { fin_analyse(); };
+S : HEADER
+{ fin_analyse(); } ;
+
+HEADER : TITLE W ACC HEADER
+| AUTHOR W ACC HEADER
+| DATE W ACC HEADER
+| BEGINS W ACC INTRO
+;
+
+INTRO : MAKETITLE BODY
+| BODY
+;
+
+BODY : W BODY
+| SECTION W ACC SUB BODY
+| EXIT ;
+
+SUB : SUBSECTION W ACC SUBSUB BODY
+| BODY
+;
+
+SUBSUB : SUBSUBSECTION W ACC | ;
+
+EXIT : END W ACC ;
+
+W : WORD<val> W
+| TEXTIT W ACC W
+| TEXTBF W ACC W
+| LDOTS W
+| BACKSLASH W
+|
+;

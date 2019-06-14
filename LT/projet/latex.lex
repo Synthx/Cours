@@ -1,16 +1,18 @@
 /* latex.lex */
 
 %{
+#include "yystype.h"
 #include "yygrammar.h"
 char err[20]; // chaine de caracteres pour les erreurs de syntaxe
-
 %}
 
 /* definition des macros : */
-mot [a-zA-Z0-9éèà\n :,;.'()-]
+mot [a-zA-Z0-9éèà :,;.'()-]
 separateur [\n\t]
 
 %%
+
+"}" return ACC;
 
 "\\textit{" return TEXTIT; //reconnaît la commande textit
 
@@ -42,9 +44,11 @@ separateur [\n\t]
 
 "\\enumerate{" return ENUMERATE; //reconnaît la commande enumerate
 
-{mot}+ return WORD; //reconnaît un mot
-
-"}" return ACC;
+{mot}+ {
+            yylval.text = malloc((strlen(yytext) + 1) * sizeof(char));
+            strcpy(yylval.text, yytext);
+            return WORD;
+       } //reconnaît un mot
 
 {separateur}+ ;
 
