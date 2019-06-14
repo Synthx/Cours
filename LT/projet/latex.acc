@@ -3,12 +3,16 @@
 %prelude{
    #include <stdio.h>
    #include <malloc.h>
+
+   void fin_analyse() {
+      printf("syntaxe ok");
+   }
 }
 
 /* Declaration des tokens */
 %token BEGINS, TITLE, AUTHOR, DATE, MAKETITLE, SECTION, SUBSECTION,
 SUBSUBSECTION, TEXTBF, TEXTIT, ITEMIZE, ENUMERATE, ITEM, BACKSLASH,
-LDOTS, WORD, END;
+LDOTS, WORD, END, ACC;
 
-// Grammaire
-S : TITLE | WORD ;
+/* Grammaire */
+S : TITLE | WORD { fin_analyse(); };

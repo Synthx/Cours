@@ -7,42 +7,44 @@ char err[20]; // chaine de caracteres pour les erreurs de syntaxe
 %}
 
 /* definition des macros : */
-mot [a-zA-Z0-9 :,;.'()-]
+mot [a-zA-Z0-9éèà\n :,;.'()-]
 separateur [\n\t]
 
 %%
 
-"\\textit{" {printf("textit "); return TEXTIT;} //reconnaît la commande textit
+"\\textit{" {printf("textit\n"); return TEXTIT;} //reconnaît la commande textit
 
-"\\textbf{" {printf("textbf "); return TEXTBF;} //reconnaît la commande textbf
+"\\textbf{" {printf("textbf\n"); return TEXTBF;} //reconnaît la commande textbf
 
-"\\ldots" {printf("ldots "); return LDOTS;} //reconnaît la commande ldots
+"\\ldots" {printf("ldots\n"); return LDOTS;} //reconnaît la commande ldots
 
-"\\" {printf("espace ");} //reconnaît la commande end
+"\\" {printf("espace\n"); return BACKSLASH;} //reconnaît la commande end
 
-"\\title{"  {printf("title "); return TITLE;}   //reconnaît la commande title
+"\\title{"  {printf("title\n"); return TITLE;}   //reconnaît la commande title
 
-"\\author{" {printf("author "); return AUTHOR;} //reconnaît la commande author
+"\\author{" {printf("author\n"); return AUTHOR;} //reconnaît la commande author
 
-"\\date{" {printf("date "); return DATE;} //reconnaît la commande date
+"\\date{" {printf("date\n"); return DATE;} //reconnaît la commande date
 
-"\\begin{" {printf("begin "); return BEGINS;} //reconnaît la commande begin
+"\\begin{" {printf("begin\n"); return BEGINS;} //reconnaît la commande begin
 
-"\\maketitle" {printf("maketitle "); return MAKETITLE;}    //reconnaît la commande maketitle
+"\\maketitle" {printf("maketitle\n"); return MAKETITLE;}    //reconnaît la commande maketitle
 
-"\\section{" {printf("section "); return SECTION;} //reconnaît la commande section
+"\\section{" {printf("section\n"); return SECTION;} //reconnaît la commande section
 
-"\\subsection{" {printf("subsection "); return SUBSECTION;} //reconnaît la commande subsection
+"\\subsection{" {printf("subsection\n"); return SUBSECTION;} //reconnaît la commande subsection
 
-"\\subsubsection{" {printf("subsubsection "); return SUBSUBSECTION;} //reconnaît la commande subsubsection
+"\\subsubsection{" {printf("subsubsection\n"); return SUBSUBSECTION;} //reconnaît la commande subsubsection
 
-"\\item" {printf("item "); return ITEM;} //reconnaît la commande item
+"\\item" {printf("item\n"); return ITEM;} //reconnaît la commande item
 
-"\\end{" {printf("end "); return END;} //reconnaît la commande end
+"\\end{" {printf("end\n"); return END;} //reconnaît la commande end
 
-"\\enumerate{" {printf("enumerate "); return ENUMERATE;} //reconnaît la commande enumerate
+"\\enumerate{" {printf("enumerate\n"); return ENUMERATE;} //reconnaît la commande enumerate
 
-{mot} {printf("mot "); return WORD;}
+{mot}+ {printf("mot\n"); return WORD;} //reconnaît un mot
+
+"}" {printf("fin cmd\n"); return ACC;}
 
 {separateur}+ ;
 
