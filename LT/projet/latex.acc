@@ -4,24 +4,33 @@
    #include <stdio.h>
    #include <malloc.h>
 
-   void fin_analyse() {
-      printf("syntaxe ok\n");
+   void generate_html_file() {
+      FILE* file;
+
+      file = fopen("doc.html", "w");
+
+      if (file != NULL) {
+         printf("syntaxe ok\n");
+         fclose(file);
+      } else {
+         printf("Impossible d'ouvrir le fichier doc.html\n");
+      }
    }
 }
 
 /* Declaration des tokens */
 %token BEGINS, TITLE, AUTHOR, DATE, MAKETITLE, SECTION, SUBSECTION,
-SUBSUBSECTION, TEXTBF, TEXTIT, ITEMIZE, ENUMERATE, ITEM, BACKSLASH,
-LDOTS, WORD, END, ACC;
+SUBSUBSECTION, TEXTBF, TEXTIT, ITEM, BACKSLASH,
+LDOTS, WORD, END, ACC, DOCUMENT, ITEMIZE, ENUMERATE;
 
 /* Grammaire */
-S : HEADER
-{ fin_analyse(); } ;
+STARTER : HEADER { generate_html_file(); }
+;
 
 HEADER : TITLE W ACC HEADER
 | AUTHOR W ACC HEADER
 | DATE W ACC HEADER
-| BEGINS W ACC INTRO
+| BEGINS DOCUMENT ACC INTRO
 ;
 
 INTRO : MAKETITLE BODY
@@ -30,20 +39,45 @@ INTRO : MAKETITLE BODY
 
 BODY : W BODY
 | SECTION W ACC SUB BODY
+| BASIC_LIST BODY
+| ORDERED_LIST BODY
 | EXIT ;
 
-SUB : SUBSECTION W ACC SUBSUB BODY
-| BODY
+SUB : W SUB
+| SUBSECTION W ACC SUBSUB SUB
+| BASIC_LIST SUB
+| ORDERED_LIST SUB
+|
 ;
 
-SUBSUB : SUBSUBSECTION W ACC | ;
+SUBSUB : W SUBSUB
+| SUBSUBSECTION W ACC
+| BASIC_LIST SUBSUB
+| ORDERED_LIST SUBSUB
+|
+;
 
-EXIT : END W ACC ;
+BASIC_LIST : BEGINS ITEMIZE ACC LIST END ITEMIZE ACC
+;
+
+ORDERED_LIST : BEGINS ENUMERATE ACC LIST END ENUMERATE ACC
+;
+
+LIST : ITEM W LIST
+| ORDERED_LIST LIST
+| BASIC_LIST LIST
+|
+;
+
+EXIT : END DOCUMENT ACC ;
 
 W : WORD<val> W
 | TEXTIT W ACC W
 | TEXTBF W ACC W
 | LDOTS W
 | BACKSLASH W
+| DOCUMENT W
+| ITEMIZE W
+| ENUMERATE W
 |
 ;
