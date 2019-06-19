@@ -1,0 +1,104 @@
+/* latex.acc */
+
+%prelude{
+   #include <stdio.h>
+   #include <malloc.h>
+   #include <string.h>
+
+   int count_section = 1, count_sub = 1, count_subsub = 1;
+
+   typedef struct {
+      int title, author, date;
+   } document;
+
+   void generate_html_file(document doc) {
+      if (doc.title > 1 || doc.author > 1 || doc.date > 1) {
+         printf("Erreur de syntaxe\n");
+      } else {
+         printf("\n");
+      }
+   }
+}
+
+/* Declaration des tokens */
+%token BEGINS, TITLE, AUTHOR, DATE, MAKETITLE, SECTION, 
+SUBSECTION, SUBSUBSECTION, TEXTBF, TEXTIT, ITEM, 
+BACKSLASH, LDOTS, WORD, END, ACC, DOCUMENT, ITEMIZE, 
+ENUMERATE;
+
+/* Grammaire */
+STARTER : HEADER <doc> { generate_html_file(doc); }
+;
+
+HEADER <document doc> : 
+TITLE W ACC HEADER <doc1> { 
+   doc->title = doc1.title + 1;
+   doc->author = doc1.author;
+   doc->date = doc1.date;
+   }
+| AUTHOR W ACC HEADER <doc1> { 
+   doc->title = doc1.title;
+   doc->author = doc1.author + 1;
+   doc->date = doc1.date;
+   }
+| DATE W ACC HEADER <doc1> { 
+   doc->title = doc1.title;
+   doc->author = doc1.author;
+   doc->date = doc1.date + 1;
+   }
+| BEGINS DOCUMENT ACC INTRO { 
+   doc->title = 0;
+   doc->author = 0;
+   doc->date = 0;
+   }
+;
+
+INTRO : MAKETITLE BODY
+| BODY
+;
+
+BODY : W BODY
+| SECTION { printf("<h1>%d. ", count_section); } W ACC { printf("</h1>"); } SUB { count_section++; count_sub = 1; } BODY 
+| BASIC_LIST BODY
+| ORDERED_LIST BODY
+| EXIT
+;
+
+SUB : W SUB
+| SUBSECTION { printf("<h2>%d.%d. ", count_section, count_sub); } W ACC { printf("</h2>"); } SUBSUB { count_sub++; count_subsub = 1; } SUB
+| BASIC_LIST SUB
+| ORDERED_LIST SUB
+|
+;
+
+SUBSUB : W SUBSUB
+| SUBSUBSECTION { printf("<h3>%d.%d.%d. ", count_section, count_sub, count_subsub); count_subsub++; } W ACC { printf("</h3>"); } SUBSUB
+| BASIC_LIST SUBSUB
+| ORDERED_LIST SUBSUB
+|
+;
+
+BASIC_LIST : BEGINS ITEMIZE ACC { printf("<ul>"); } LIST END ITEMIZE ACC { printf("</ul>"); }
+;
+
+ORDERED_LIST : BEGINS ENUMERATE ACC { printf("<ol>"); } LIST END ENUMERATE ACC { printf("</ol>"); }
+;
+
+LIST : ITEM { printf("<li>"); } W { printf("</li>"); } LIST
+| ORDERED_LIST LIST
+| BASIC_LIST LIST
+|
+;
+
+EXIT : END DOCUMENT ACC ;
+
+W : WORD <text> { printf("%s", text); } W
+| TEXTIT { printf("<i>"); } W ACC { printf("</i>"); } W 
+| TEXTBF { printf("<b>"); } W ACC { printf("</b>"); } W
+| LDOTS { printf("..."); } W
+| BACKSLASH { printf("<br/>"); } W
+| DOCUMENT { printf("document"); } W
+| ITEMIZE { printf("itemize"); } W
+| ENUMERATE { printf("enumerate"); } W
+|
+;
