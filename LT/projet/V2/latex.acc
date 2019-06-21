@@ -3,19 +3,16 @@
 %prelude{
    #include <stdio.h>
    #include <malloc.h>
-   #include <string.h>
-
-   int count_section = 1, count_sub = 1, count_subsub = 1;
 
    typedef struct {
       int title, author, date;
    } document;
 
-   void generate_html_file(document doc) {
+   void verify(document doc) {
       if (doc.title > 1 || doc.author > 1 || doc.date > 1) {
          printf("Erreur de syntaxe\n");
       } else {
-         printf("\n");
+         printf("Syntaxe ok\n");
       }
    }
 }
@@ -27,7 +24,7 @@ BACKSLASH, LDOTS, WORD, END, ACC, DOCUMENT, ITEMIZE,
 ENUMERATE;
 
 /* Grammaire */
-STARTER : HEADER <doc> { generate_html_file(doc); }
+STARTER : HEADER <doc> { verify(doc); }
 ;
 
 HEADER <document doc> : 
@@ -58,33 +55,33 @@ INTRO : MAKETITLE BODY
 ;
 
 BODY : W BODY
-| SECTION { printf("<h1>%d. ", count_section); } W ACC { printf("</h1>"); } SUB { count_section++; count_sub = 1; } BODY 
+| SECTION W ACC SUB BODY 
 | BASIC_LIST BODY
 | ORDERED_LIST BODY
 | EXIT
 ;
 
 SUB : W SUB
-| SUBSECTION { printf("<h2>%d.%d. ", count_section, count_sub); } W ACC { printf("</h2>"); } SUBSUB { count_sub++; count_subsub = 1; } SUB
+| SUBSECTION W ACC SUBSUB SUB
 | BASIC_LIST SUB
 | ORDERED_LIST SUB
 |
 ;
 
 SUBSUB : W SUBSUB
-| SUBSUBSECTION { printf("<h3>%d.%d.%d. ", count_section, count_sub, count_subsub); count_subsub++; } W ACC { printf("</h3>"); } SUBSUB
+| SUBSUBSECTION W ACC SUBSUB
 | BASIC_LIST SUBSUB
 | ORDERED_LIST SUBSUB
 |
 ;
 
-BASIC_LIST : BEGINS ITEMIZE ACC { printf("<ul>"); } LIST END ITEMIZE ACC { printf("</ul>"); }
+BASIC_LIST : BEGINS ITEMIZE ACC LIST END ITEMIZE ACC
 ;
 
-ORDERED_LIST : BEGINS ENUMERATE ACC { printf("<ol>"); } LIST END ENUMERATE ACC { printf("</ol>"); }
+ORDERED_LIST : BEGINS ENUMERATE ACC LIST END ENUMERATE ACC
 ;
 
-LIST : ITEM { printf("<li>"); } W { printf("</li>"); } LIST
+LIST : ITEM W LIST
 | ORDERED_LIST LIST
 | BASIC_LIST LIST
 |
@@ -92,13 +89,13 @@ LIST : ITEM { printf("<li>"); } W { printf("</li>"); } LIST
 
 EXIT : END DOCUMENT ACC ;
 
-W : WORD <text> { printf("%s", text); } W
-| TEXTIT { printf("<i>"); } W ACC { printf("</i>"); } W 
-| TEXTBF { printf("<b>"); } W ACC { printf("</b>"); } W
-| LDOTS { printf("..."); } W
-| BACKSLASH { printf("<br/>"); } W
-| DOCUMENT { printf("document"); } W
-| ITEMIZE { printf("itemize"); } W
-| ENUMERATE { printf("enumerate"); } W
+W : WORD W
+| TEXTIT W ACC W 
+| TEXTBF W ACC W
+| LDOTS W
+| BACKSLASH W
+| DOCUMENT W
+| ITEMIZE W
+| ENUMERATE W
 |
 ;

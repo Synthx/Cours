@@ -12,7 +12,7 @@ BACKSLASH, LDOTS, WORD, END, ACC, DOCUMENT, ITEMIZE,
 ENUMERATE;
 
 /* Grammaire */
-STARTER : HEADER { printf("syntaxe ok\n"); }
+STARTER : HEADER { printf("Syntaxe ok\n"); }
 ;
 
 HEADER : 

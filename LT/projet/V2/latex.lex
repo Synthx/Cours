@@ -1,7 +1,6 @@
 /* latex.lex */
 
 %{
-#include "yystype.h"
 #include "yygrammar.h"
 
 char err[20]; // chaine de caracteres pour les erreurs de syntaxe
@@ -48,11 +47,7 @@ mot [a-zA-Z0-9éèà :,;.'()\[\]\-\/]
 
 "\\end{" return END; //reconnaît la commande end
 
-{mot}+ {
-            yylval.text = malloc((strlen(yytext) + 1) * sizeof(char));
-            strcpy(yylval.text, yytext);
-            return WORD;
-       } //reconnaît un mot
+{mot}+ return WORD; //reconnait un mot
 
 \n yypos++; 
 
