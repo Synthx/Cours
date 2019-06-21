@@ -65,14 +65,16 @@ BODY : W BODY
 ;
 
 SUB : W SUB
-| SUBSECTION { printf("<h2>%d.%d. ", count_section, count_sub); } W ACC { printf("</h2>"); } SUBSUB { count_sub++; count_subsub = 1; } SUB
+| SUBSECTION { printf("<h2>%d.%d. ", count_section, count_sub); } W ACC { printf("</h2>"); } 
+SUBSUB { count_sub++; count_subsub = 1; } SUB
 | BASIC_LIST SUB
 | ORDERED_LIST SUB
 |
 ;
 
 SUBSUB : W SUBSUB
-| SUBSUBSECTION { printf("<h3>%d.%d.%d. ", count_section, count_sub, count_subsub); count_subsub++; } W ACC { printf("</h3>"); } SUBSUB
+| SUBSUBSECTION { printf("<h3>%d.%d.%d. ", count_section, count_sub, count_subsub); count_subsub++; } W 
+ACC { printf("</h3>"); } SUBSUB
 | BASIC_LIST SUBSUB
 | ORDERED_LIST SUBSUB
 |
