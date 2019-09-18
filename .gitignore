@@ -35,5 +35,10 @@ SD/projet/programme/programme
 .idea/
 *.iml
 
+# Rstudio
+*.RData
+*.Rhistory
+*.Rproj*
+
 # Compilateur Accent
 LT/Compil/*

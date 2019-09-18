@@ -1,0 +1,222 @@
+---
+title: "TP1 - Exercice 2"
+author: "Taniel Rémi"
+date: "16/09/2019"
+output:
+  pdf_document: default
+  word_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Importation et visualisation des données
+
+On commence par importer les données dans la variable data grâce à la fonction suivante :
+
+```{r}
+data <- read.table("/home/remi/Documents/Cours/AD/data/notes.csv", sep = ";", dec = ",", header = TRUE)
+```
+
+On obtient 27 observations pour 15 variables différentes, on se propose d'étudier alors le type de ces variables :
+
+```{r}
+str(data)
+```
+
+On remarque qu'à part la première colonne qui est le numéro de l'élève, toutes les autres variables sont quantitatives, et représente la moyenne dans chaque matière de chaque élève.
+
+On décide de reformater les données pour donner des identifiants de lignes à nos données, dans notre cas on prendra le numéro de l'élèves en question :
+
+```{r}
+rownames(data) <- data$eleves
+data <- data[,-1]
+```
+
+Notre jeu de variable devient alors :
+
+```{r}
+head(data)
+```
+
+# Analyse
+
+Pour réaliser l'ACP et les prochaines questions, nous allons avoir besoin des librairies suivantes :
+
+```{r include=FALSE}
+library(FactoMineR)
+library(Hmisc)
+```
+
+## Question 1 : ACP
+
+On réalise l'ACP grâce à la fonction suivante :
+
+```{r}
+data.pca <- FactoMineR::PCA(data, scale.unit = TRUE, ncp = 6, graph = FALSE)
+```
+
+On décide de ne pas afficher les informations ni les graphes, nous les utiliserons dans les questions suivantes.
+
+## Question 2 : Tableau des statistiques sommaires
+
+La tableau des statistiques sommaires est obtenu par la fonction :
+
+```{r}
+summary(data)
+```
+
+Grâce à ce tableau, nous pouvons déduire les renseignements suivants :
+- En grammaire (variable GRAM) 50% des élèves ont en dessous de 7,5, tandis que 50% des élèves ont plus de 15 de moyenne en exposé (variable EXPO).
+- En orthographe (ORTH), les notes sont très hétérogènes (minimum 0 et maximum 20 de moyenne), comme en technologie (TECH) ou en géographie (GEO).
+- Généralement la moyenne dans ces matières est supérieure à 10.
+
+## Question 3 : Coefficient de corrélation
+
+Pour obtenir les différents coefficients de corrélation entre les variables de notre jeu de données, on utilise la fonction rcorr de la librairie Hmisc :
+
+```{r}
+Hmisc::rcorr(as.matrix(data))
+```
+
+## Question 4 : Nombre de composantes principales à retenir
+
+On obtient les valeurs propres grâce à la variable :
+
+```{r}
+data.pca$eig
+```
+
+Il y a 3 critères pour déterminer le nombre d'axes à retenir :
+
+* La part d'inertie cumulée supérieure à 80%
+* La comparaison avec la moyenne
+* La règle du coude (ou règle de Kaiser)
+
+Nous allons pour chacun de ces critères, déterminer le nombre de composantes principales à retenir.
+
+### Part d'inertie cumulée
+
+Pour ce critère, nous devons additionner les valeurs propres des axes jusqu'à obtenir un pourcentage cumulé supérieur à 80%, grâce au tableau au dessus, nous pouvons retenir les 6 premières composantes qui à elles seules réprésentes un peu plus 84% de l'information totale.
+
+### Comparaison avec la moyenne
+
+On commence par calculer la moyenne des pourcentages des valeurs propres, obtenu grâce à :
+
+```{r}
+mean(data.pca$eig[,2])
+```
+
+On retient les composantes principales dont le pourcentage est supérieur à cette moyenne, c'est à dire que nous pouvons retenir les 5 premières composantes principales en utilisant ce critère.
+
+### Critère de coude
+
+Pour utiliser ce critère, nous devons d'abord tracer le graphique suivant :
+
+```{r}
+barplot(data.pca$eig[,2])
+```
+
+Selon le critère du coude, nous pouvons retenir 3 composantes principales.
+
+### Conclusion
+
+On retiens donc 5 composantes principales pour notre analyse.
+
+## Question 5 : Interprétation des 3 premiers axes par rapport aux disciplines
+
+On recupère les données des disciplines sur les différents axes grâce à la variable :
+
+```{r}
+data.pca$var
+```
+
+### Dim 1. (34,11%)
+
+| Disciplines | Contribution | Qualité | Signe |
+| :------ | :------: | :-----: | -----: |
+| EXPR | 16.00 | 0.76 | + |
+| MATH | 11.26 | 0.53 | + |
+| HIST | 10.21 | 0.48 | + |
+| ART | 12.03 | 0.57 | + |
+| ANGL | 9.15 | 0.44 | + |
+| ORTH | 8.86 | 0.43 | + |
+| EDMU | 8.71 | 0.41 | + |
+| EXPO | 7.14 | 0.34 | + |
+
+Les disciplines retenus expliquent à elles seules 83.36% de l'information portée par la dimension 1, on remarque que sur cet axe, toutes les coordonnées des variables sont positives, cet axe n'oppose donc aucune variable.
+
+### Dim. 2 (17.09%)
+
+| Discipline     | Contribution | Qualité | Signe |
+| :------------- | :----------: | :-----: | ----: |
+| ORTH           | 10.14        | 0.24    |   -   |
+| GRAM           | 9.86         | 0.24    |   -   |
+| RECI           | 14.80        | 0.35    |   +   |
+| ANGL           | 14.16        | 0.34    |   -   |
+| EDMU           | 11.96        | 0.29    |   +   |
+| TECH           | 11.09        | 0.27    |   +   |
+| EPS            | 7.80         | 0.19    |   +   |
+
+Les disciplines retenus expliquent 79.81% de l'information portée par la dimension 2, en regardant le signe des variables sur cet axe, nous pouvons dire que la dimension 2 oppose les matières récitation, education musicale, technologie et EPS aux matières orthographe, grammaire et anglais.
+
+### Dim. 3 (10.7%)
+
+| Disciplines | Contribution | Qualité | Signe |
+| :---- | :------: | :-----: | -----: |
+| EPS | 24.16 | 0.36 | + |
+| GEO | 19.5 | 0.29 | + |
+| TECH | 14.5 | 0.22 | - |
+| EXPO | 13.72 | 0.21 | - |
+| RECI | 9.20 | 0.14 | - |
+
+Les disciplines retenus expliquent 81.08% de l'information portée par la dimension 3, cet axe met en opposition l'EPS et la géographie à la technologie, l'exposé et la récitation.
+
+## Question 6 : Cercle de corrélation
+
+On obtient le cercle de corrélation avec la fonction plot.PCA dans la librairie FactoMineR :
+
+```{r}
+FactoMineR::plot.PCA(data.pca, axes = c(1,2), choix = "var")
+```
+
+On remarque que suivant l'axe 1, toutes les variables sont positives, cet axe n'oppose aucune variable, elles sont toutes liées entre elles, si l'une de ces variables est grande, alors le reste des variables le sera aussi (mais faiblement dans le cas de la technologie ou l'EPS)
+
+Les disciplines les mieux représentés dans ce plan sont les suivantes :
+
+* l'éducation musicale
+* l'expression écrite
+* l'anglais
+* l'orthographe
+
+## Question 7 : Interprétation
+
+On peut déduire de ce phénomène que si un élève est plutôt bon dans une de ces matières, il sera également bon dans les autres, et inversement, si il a de mauvaises notes dans une de celles-ci, il est fortement probable qu'il en a des mauvaises dans les autres également.
+
+## Question 8 : Contribution de certains élèves
+
+La contribution des élèves EL10 et EL12 par rapport aux axes factoriels 1 et 2 est donnée par :
+
+```{r}
+data.pca$ind$contrib[c("EL10","EL12"),c("Dim.1","Dim.2")]
+```
+
+On remarque que les 2 élèves contribuent fortement au premier axe factoriel, tandis que seul l'élève EL10 contribue au deuxième axe factoriel.
+Nous pouvons interpréter ces résultats en disant que ces 2 élèves ont une bonne moyenne en expression écrite, en mathématiques, en biologie, en art plastique, en histoire.
+Tandis que seul l'élève EL10 a de bonne note en technologie, sport et récitation.
+
+## Question 9 : Explication des axes 1,2 et 3 par les élèves
+
+La contribution des différents élèves sur les 3 premiers axes est donnée grâce à la variable suivante :
+
+```{r}
+data.pca$ind$contrib[,c("Dim.1","Dim.2","Dim.3")]
+```
+
+Pour la dimension 1, les élèves qui l'expliquent sont : 1,9,10,12,21,23,24
+Pour la dimension 2, les élèves qui l'expliquent sont : 1,13,16,17,19,21,22,23,26
+Pour la dimension 3, les élèves qui l'expliquent sont : 3,4,7,13,20,23,24,25
+
+# Question 10
+
