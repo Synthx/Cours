@@ -8,6 +8,8 @@
 yygrammar.*
 *.class
 *.zip
+*target*
+*.lst
 
 # Fichier compilé
 R/tp2/tp2_files/*
