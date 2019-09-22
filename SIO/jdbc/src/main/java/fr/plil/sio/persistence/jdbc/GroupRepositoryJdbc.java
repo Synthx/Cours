@@ -48,7 +48,6 @@ public class GroupRepositoryJdbc implements GroupRepository {
                 }
             } catch (SQLException e) {
                 throw new UnsupportedOperationException("sql exception during close", e);
-
             }
         }
     }

@@ -8,13 +8,10 @@ import javax.sql.DataSource;
 import java.sql.Connection;
 import java.sql.SQLException;
 import java.sql.Statement;
+import java.util.ArrayList;
+import java.util.List;
 
 public abstract class AbstractServiceSupport {
-
-    private static final String create_table_group = "CREATE TABLE GROUP_T (GROUP_ID INT NOT NULL AUTO_INCREMENT, " +
-            "NAME_C VARCHAR(50) UNIQUE NOT NULL, PRIMARY KEY(GROUP_ID))";
-
-    private static final String drop_table_group = "DROP TABLE GROUP_T";
 
     @Autowired
     private DataSource dataSource;
@@ -25,16 +22,34 @@ public abstract class AbstractServiceSupport {
 
     @Before
     public void createTables() throws SQLException {
-        openConnection();
-        stmt.executeUpdate(create_table_group);
-        closeConnection();
+        List<String> requests = new ArrayList<>();
+        requests.add("CREATE TABLE GROUP_T (GROUP_ID INT NOT NULL AUTO_INCREMENT, NAME_C VARCHAR(50) UNIQUE NOT NULL, " +
+                "PRIMARY KEY(GROUP_ID))");
+        requests.add("CREATE TABLE RIGHT_T (RIGHT_ID INT NOT NULL AUTO_INCREMENT, PARENT_ID INT, " +
+                "NAME_C VARCHAR(50) NOT NULL, PRIMARY KEY(RIGHT_ID), FOREIGN KEY(PARENT_ID) REFERENCES RIGHT_T(RIGHT_ID))");
+
+        this.openConnection();
+
+        for (String request : requests) {
+            this.stmt.executeUpdate(request);
+        }
+
+        this.closeConnection();
     }
 
     @After
     public void cleanupDatabase() throws SQLException {
-        openConnection();
-        stmt.executeUpdate(drop_table_group);
-        closeConnection();
+        List<String> requests = new ArrayList<>();
+        requests.add("DROP TABLE GROUP_T");
+        requests.add("DROP TABLE RIGHT_T");
+
+        this.openConnection();
+
+        for (String request : requests) {
+            this.stmt.executeUpdate(request);
+        }
+
+        this.closeConnection();
     }
 
     private void closeConnection() throws SQLException {

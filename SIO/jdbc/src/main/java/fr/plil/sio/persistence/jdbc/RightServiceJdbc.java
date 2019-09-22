@@ -2,20 +2,51 @@ package fr.plil.sio.persistence.jdbc;
 
 import fr.plil.sio.persistence.api.Right;
 import fr.plil.sio.persistence.api.RightService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
 public class RightServiceJdbc implements RightService {
+
+    @Autowired
+    private RightRepository rightRepository;
+
     @Override
     public Right create(String name) {
-        return null;
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+
+        Right right = new Right();
+        right.setName(name);
+
+        this.rightRepository.save(right);
+
+        return right;
     }
 
     @Override
     public Right create(String name, Right parent) {
-        return null;
+        if (name == null || parent == null) {
+            throw new IllegalArgumentException("name or parent cannot be null");
+        }
+
+        Right databaseParentObject = this.rightRepository.findOne(parent.getId());
+        if (databaseParentObject == null) {
+            throw new IllegalArgumentException("parent must exist in database");
+        }
+
+        Right right = new Right();
+        right.setName(name);
+        right.setParent(databaseParentObject);
+
+        this.rightRepository.save(right);
+
+        parent.getSiblings().add(right);
+
+        return right;
     }
 
     @Override
@@ -25,11 +56,19 @@ public class RightServiceJdbc implements RightService {
 
     @Override
     public List<Right> findByName(String name) {
-        throw new IllegalStateException("not implemented !");
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+
+        return this.rightRepository.findByName(name);
     }
 
     @Override
     public Right findOne(Long id) {
-        throw new IllegalStateException("not implemented !");
+        if (id == null) {
+            throw new IllegalArgumentException("id cannot be null");
+        }
+
+        return this.rightRepository.findOne(id);
     }
 }
