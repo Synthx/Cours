@@ -1,0 +1,211 @@
+---
+title: "Enquête de la régie française du tabac"
+author: "Rémi Taniel"
+date: "23/09/2019"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# 1ère partie : Importation des données
+
+On commence par importer les données grâce à :
+
+```{r}
+data <- read.table("../data/fumeur.csv", sep = ",", dec = ".", header = TRUE)
+```
+
+Puis on visualise les données grâce à la fonction str(...) :
+
+```{r}
+str(data)
+```
+
+On remarque que toutes les données sont numériques, on affiche les 10 premières lignes de nos données :
+
+```{r}
+head(data)
+```
+
+Puis on décide de formater les données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera libellé :
+
+```{r}
+rownames(data) <- data$libellé
+data <- data[,-1]
+head(data)
+```
+
+# 2e partie : Mise en oeuvre de l'AFC
+
+Pour réaliser l'AFC, nous aurons besoin du package FactoMineR :
+
+```{r}
+library(FactoMineR)
+```
+
+Puis on range les résultats de l'AFC (valeurs propres, coordonnées, contribution) dans data.ca, dans notre cas, nous ne retenons que les 4 premiers axes et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
+
+```{r}
+data.ca <- FactoMineR::CA(data, ncp = 4, graph = FALSE)
+```
+(Explication de où se trouve les variables ?)
+
+# 3e partie : Analyse des résultats
+
+## Nombre d'axe à retenir
+
+Pour connaître le nombre d'axe que nous devons retenir, nous pouvons utiliser 3 critères :
+
+* Part d'inertie supérieure à la moyenne
+* Part d'inertie cumulée supérieure à 80%
+* Critère du coude
+
+### Part d'inertie supérieure à la moyenne
+
+La moyenne des part d'inertie expliquée par chaque axe peut être obtenue par :
+
+```{r}
+mean(data.ca$eig[,2])
+```
+
+Selon ce critère, nous pouvons retenir les 4 premiers axes, qui possèdent tous une part d'inertie supérieure à 10.
+
+### Part d'inertie cumulée supérieure à 80%
+
+Tout comme le précédent critère, nous retenons les 4 premiers axes, en effet, ces 4 ci expliquent 83,44% de l'inertie totale portée par nos données.
+
+### Critère du coude
+
+Afin d'appliquer ce critère, nous devons dans un premier temps, tracer le graphique suivant :
+
+```{r}
+barplot(data.ca$eig[,2])
+```
+
+Le coude apparaît entre la 4e et 5e dimension, donc en utilisant ce critère nous devons également retenir 4 dimensions.
+
+### Conclusion sur le nombre d'axe à retenir
+
+Selon les 3 critères, nous devons seulement retenir les 4 premiers axes, on retrouve donc la valeur du paramètre nommé ncp lors de l'appel à la fonction qui calcule l'AFC (FactoMineR::CA).
+
+## Analyse des quatres premiers axes en fonction des marques
+
+Pour obtenir les données des 4 premiers axes en fonction des marques, on utilisa l'information suivante :
+
+```{r}
+data.ca$col
+```
+
+Pour chacune ds 4 dimensions, nous allons retenir les marques dont la contribution est supérieure à la moyenne (soit 8.33), puis pour chacune des marques retenues, nous allons noter la qualité de leur répresentation sous cet axe, ainsi que le signe de ses coordonnées.
+
+### Dimension 1
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Corsaire | 37.57 | 0.63 | + |
+| Hotesse | 14.38 | 0.34 | + |
+| Zodiac | 11.50 | 0.54 | + |
+| Orly | 9.05 | 0.47 | - |
+| Somme | 72.50 |
+
+Ces 4 marques représentent plus de 70% de l'information totale expliquée par le premier axe, il permet de mettre en opposition les marques `Corsaire`, `Hotesse`, `Zodiac` et `Orly`.
+
+### Dimension 2
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Escale | 27.97 | 0.85 | + |
+| Directoire | 25.77 | 0.55 | - |
+| Hotesse | 24.73 | 0.46 | + |
+| Somme | 78.47 |
+
+Les 3 marques retenus expliquent à elles seuls 78.47% de l'information portée par la dimension 2, de plus on voit apparaître une opposition entre les marques `Escale`, `Hotesse` et `Directoire`.
+
+### Dimension 3
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Alezan | 49.97 | 0.62 | + |
+| Directoire | 19.52 | 0.32 | - |
+| Cocker | 16.32 | 0.36 | + |
+| Somme | 85.81 |
+
+Nous retenons ces 3 marques qui représentent un peu plus de 85% de l'information portée par l'axe 3, cette dimension met en lumière une opposition entre les marques de cigarettes `Alezan`, `Cocker` et `Directoire`.
+
+### Dimension 4
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Corsaire | 37.24 | 0.28 | + |
+| Cocker | 19.13 | 0.32 | - |
+| Zodiac | 17.25 | 0.36 | - |
+| Aleza | 15.11 | 0.14 | + |
+| Somme | 88.73 |
+
+Pour la dimension 4, on décide de retenir ces 4 marques de cigarettes, elles représentent 88.73% de l'information portée par cet axe et met en opposition `Corsaire` et `Aleza` à `Cocker` et `Zodiac`.
+
+## Analyse des quatres premiers axes en fonction des attributs
+
+Nous allons reprendre la même méthode que précédemment mais en l'appliquant aux lignes et non plus aux colonnes, on utilise les données suivantes :
+
+```{r}
+data.ca$row
+```
+
+Comme précédemment, pour chaque dimension, 
+
+### Dimension 1
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| vulg | 28.77 | 0.65 | + |
+| dist | 20.93 | 0.64 | - |
+| coca | 20.79 | 0.60 | + |
+| nouv | 12.83 | 0.40 | - |
+| Somme | 83.32 |
+
+Ces 4 attributs expliquent plus de 80% de l'information portée par l'axe 1, celui-ci oppose vulgaire-commun (`vulg`) et cocasse-ridicule (`coca`) à distingué (`dist`) et nouveau-riche (`nouv`).
+
+### Dimension 2
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| viel | 33.68 | 0.51 | - |
+| fem | 39.89 | 0.74 | + |
+| vulg | 11.48 | 0.20 | + |
+| Somme | 85.05 |
+
+On ne retient que 3 attributs pour la 2e dimension, celles-ci expliquent 85% de l'information portée par cet axe, celui-ci met en opposition les attributs femme (`fem`) et vulgaire-commun (`vulg`) à vieillot-désuet (`viel`).
+
+### Dimension 3
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| racé | 45.46 | 0.74 | + |
+| viel | 32.91 | 0.38 | - |
+| Somme | 78.37 |
+
+On ne retient que 2 attributs sur la dimension 3, néanmoins ces 2 attributs expliquent quasiment 80% de l'information portée par l'axe analysé, et oppose l'attribut racé (`racé`) à l'attribut vieillot-désuet (`viel`).
+
+### Dimension 4
+
+| Marque | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| petit | 26.39 | 0.56 | - |
+| hom | 21.28 | 0.55 | + |
+| coca | 12.11 | 0.16 | - |
+| vulg | 12.37 | 0.12 | + |
+| Somme | 72.15 |
+
+Pour la dimension 4, les attributs retenus représentent un peu plus de 70% de l'information portée par la dimension 4, celle-ci oppose les attributs petit (`petit`) et cocasse-ridicule (`coca`) aux attributs homme (`hom`) et vulgaire-commun (`vulg`).
+
+## Interprétation du premier plan factoriel
+
+On peut obtenir les projections des marques et des attributs dans le premier plan factoriel grâce à :
+
+```{r}
+
+```
+
