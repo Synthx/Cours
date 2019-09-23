@@ -1,0 +1,11 @@
+! Objectif;
+MAX = 29.95*X1 + 39.95*X2;
+
+! Variables;
+@GIN(X1);
+@GIN(X2);
+
+! Contraintes;
+6*X1 + 8*X2 <= 6000;
+10*X1 + 18*X2 <= 15000;
+X1 + 2*X2 <= 1500;

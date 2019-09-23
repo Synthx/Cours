@@ -1,0 +1,24 @@
+! Objectif;
+MAX = 3*QA + 2*QB + 4*QC + 3*QD1 + 2*QD2 + 3*QE1 + 2*QE2 - (4*(H1 + H2) + 3*H3);
+
+! Variables;
+@GIN(QA);
+@GIN(QB);
+@GIN(QC);
+@GIN(QD1);
+@GIN(QD2);
+@GIN(QE1);
+@GIN(QE2);
+
+H1 = (12*QA + 7*QB + 8*QC + 10*QD1 + 10*QD2 + 7*QE1 + 7*QE2) / 60;
+H2 = (8*QA + 9*QB + 4*QC + 11*QE1 + 11*QE2) / 60;
+H3 = (5*QA + 10*QB + 7*QC + 3*QD1 + 3*QD2 + 2*QE1 + 2*QE2) / 60;
+
+! Contraintes;
+! Capacité de production inférieure à 128h;
+H1 <= 128;
+H2 <= 128;
+H3 <= 128;
+! 20 premières unités vendus à prix fort;
+QD1 <= 20;
+QE1 <= 20;

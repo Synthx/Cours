@@ -1,0 +1,18 @@
+! Objectif;
+MIN = 15*X1 + 10*X2 + 9*X3 + 7*X4;
+
+! Variables;
+@GIN(X1);
+@GIN(X2);
+@GIN(X3);
+@GIN(X4);
+
+! Contraintes;
+! 1000 voiture au total;
+X1 + X2 + X3 + X4 = 1000;
+! 400 min dans l'usine 3;
+X3 >= 400;
+! 3300h au total;
+2*X1 + 3*X2 + 4*X3 + 5*X4 <= 3300;
+! 4000 matières premières;
+3*X1 + 4*X2 + 5*X3 + 6*X4 <= 4000;
