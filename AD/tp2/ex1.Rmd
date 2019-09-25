@@ -9,7 +9,11 @@ output: pdf_document
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# 1ère partie : Importation des données
+# Introduction
+
+
+
+# Partie 1 : Importation des données
 
 On commence par importer les données grâce à :
 
@@ -17,19 +21,19 @@ On commence par importer les données grâce à :
 data <- read.table("../data/fumeur.csv", sep = ",", dec = ".", header = TRUE)
 ```
 
-Puis on visualise les données grâce à la fonction str(...) :
+Puis on visualise les types de ces données avec la fonction `str` :
 
 ```{r}
 str(data)
 ```
 
-On remarque que toutes les données sont numériques, on affiche les 10 premières lignes de nos données :
+On remarque que nous avons 11 observations, qui représentent les marques de cigarette pour 13 variables, représentant les différents attributs associés aux marques, on remarque également que toutes nos variables sont numériques, on décide d'afficher les 6 premières lignes de nos données :
 
 ```{r}
 head(data)
 ```
 
-Puis on décide de formater les données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera libellé :
+La variable `libellé` n'est pas utile, on peut donc l'enlever, pour cela on formatte les données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera `libellé` qui représente les attributs :
 
 ```{r}
 rownames(data) <- data$libellé
@@ -39,18 +43,42 @@ head(data)
 
 # 2e partie : Mise en oeuvre de l'AFC
 
-Pour réaliser l'AFC, nous aurons besoin du package FactoMineR :
+Pour réaliser l'AFC sur nos données, nous aurons besoin du package FactoMineR :
 
 ```{r}
 library(FactoMineR)
 ```
 
-Puis on range les résultats de l'AFC (valeurs propres, coordonnées, contribution) dans data.ca, dans notre cas, nous ne retenons que les 4 premiers axes et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
+Puis on range les résultats de l'AFC (valeurs propres, coordonnées, contribution) dans la variable `data.ca`, dans notre cas, nous ne gardons que les 4 premières dimensions pour notre analyse et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
 
 ```{r}
 data.ca <- FactoMineR::CA(data, ncp = 4, graph = FALSE)
 ```
-(Explication de où se trouve les variables ?)
+
+Les valeurs propres des différentes dimensions sont stockés dans la variable :
+
+```{r}
+data.ca$eig
+```
+
+On remarque les valeurs propres sont toutes comprises entre 0 et 1 et que la somme est égale à la trace de la matrice de correlation linéaire
+
+```{r}
+sum(data.ca$eig[,1])
+```
+
+Les contributions, cos2 et coordonnées en fonction des dimensions sont stockés pour les attributs dans la variable :
+
+```{r}
+data.ca$row
+```
+
+Et pour les marques dans :
+
+```{r}
+data.ca$col
+```
+
 
 # 3e partie : Analyse des résultats
 

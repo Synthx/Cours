@@ -1,63 +1,103 @@
 ---
-title: "TP1 - Exercice 2"
+title: "Niveau scolaire d'une classe de 6e"
 author: "Taniel Rémi"
 date: "16/09/2019"
 output:
   pdf_document: default
-  word_document: default
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
-# Importation et visualisation des données
+# Introduction
 
-On commence par importer les données dans la variable data grâce à la fonction suivante :
+Dans cette étude, nous nous intéresserons aux résultats d'une classe de 6e composée de 27 élèves sur les 14 disciplines suivantes :
+
+* ORTH: Orthographe
+* GRAM: Grammaire
+* EXPR: Expression écrite
+* RECI: Récitation
+* MATH: Mathématiques
+* ANGL: Anglais
+* HIST: Histoire
+* BIOL: Biologie
+* EDMU: Education musicale
+* ARTS: Arts plastiques
+* TECH: Technologie
+* EPS: Education Physique et Sportive
+* GEO: Géographie
+* EXPO: Exposé
+
+# Partie 1 : Importation et visualisation des données
+
+Nos données sont sauvegardées au format CSV dans le fichiers notes, nous commencons donc par importer les données dans la variable `data` grâce à la fonction suivante :
 
 ```{r}
 data <- read.table("/home/remi/Documents/Cours/AD/data/notes.csv", sep = ";", dec = ",", header = TRUE)
 ```
 
-On obtient 27 observations pour 15 variables différentes, on se propose d'étudier alors le type de ces variables :
+On visualise les types de nos données et la forme de celles-ci grâce à la fonction `str` appliquée à notre variable :
 
 ```{r}
 str(data)
 ```
 
-On remarque qu'à part la première colonne qui est le numéro de l'élève, toutes les autres variables sont quantitatives, et représente la moyenne dans chaque matière de chaque élève.
+Notre jeu de données contient 27 observations, représentant nos 27 élèves, pour 15 variables, représentant les matières. On remarque qu'à part la première colonne qui est le numéro de l'élève, toutes les autres variables sont quantitatives, et représentent la moyenne dans chaque matière pour un élève donné.
 
-On décide de reformater les données pour donner des identifiants de lignes à nos données, dans notre cas on prendra le numéro de l'élèves en question :
+On décide de reformater les données pour supprimer la variable `eleves` et donner des identifiants de lignes à nos données, dans notre cas on prendra le numéro de l'élèves en question :
 
 ```{r}
 rownames(data) <- data$eleves
 data <- data[,-1]
 ```
 
-Notre jeu de variable devient alors :
+Notre jeu de données devient alors :
 
 ```{r}
 head(data)
 ```
 
-# Analyse
+# Partie 2 : Mise en oeuvre de l'ACP
 
 Pour réaliser l'ACP et les prochaines questions, nous allons avoir besoin des librairies suivantes :
 
-```{r include=FALSE}
+```{r}
 library(FactoMineR)
 library(Hmisc)
 ```
 
-## Question 1 : ACP
-
-On réalise l'ACP grâce à la fonction suivante :
+Puis on range les résultats de l'ACP (valeurs propres, coordonnées, contribution) dans la variable `data.pca`, dans notre cas, nous ne gardons que les 6 premieres dimensions pour notre analyse et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
 
 ```{r}
 data.pca <- FactoMineR::PCA(data, scale.unit = TRUE, ncp = 6, graph = FALSE)
 ```
 
-On décide de ne pas afficher les informations ni les graphes, nous les utiliserons dans les questions suivantes.
+Les valeurs propres des différentes dimensions sont stockés dans la variable :
+
+```{r}
+data.pca$eig
+```
+
+On remarque que la somme des valeurs propres est égale aux nombre de variables soit 14 dans notre cas :
+
+```{r}
+sum(data.pca$eig[,1])
+```
+
+Les contributions, cos2 et coordonnées en fonction des dimensions sont stockés pour les variables dans la variable :
+
+```{r}
+data.pca$var
+```
+
+Et pour les individus, on retrouvera ces informations dans la variable :
+
+```{r}
+data.pca$ind
+```
+
+# Partie 3 : Analyse des résultats
 
 ## Question 2 : Tableau des statistiques sommaires
 
@@ -68,47 +108,61 @@ summary(data)
 ```
 
 Grâce à ce tableau, nous pouvons déduire les renseignements suivants :
-- En grammaire (variable GRAM) 50% des élèves ont en dessous de 7,5, tandis que 50% des élèves ont plus de 15 de moyenne en exposé (variable EXPO).
-- En orthographe (ORTH), les notes sont très hétérogènes (minimum 0 et maximum 20 de moyenne), comme en technologie (TECH) ou en géographie (GEO).
-- Généralement la moyenne dans ces matières est supérieure à 10.
+
+* En grammaire (variable GRAM) 50% des élèves ont en dessous de 7,5, tandis que 50% des élèves ont plus de 15 de moyenne en exposé (variable EXPO).
+* En orthographe (ORTH), les notes sont très hétérogènes (minimum 0 et maximum 20 de moyenne), comme en technologie (TECH) ou en géographie (GEO).
+* Généralement la moyenne dans chacunes des 14 matières est supérieure à 10, on peut donc déduire que la classe a plutôt un bon niveau.
 
 ## Question 3 : Coefficient de corrélation
 
-Pour obtenir les différents coefficients de corrélation entre les variables de notre jeu de données, on utilise la fonction rcorr de la librairie Hmisc :
+Pour obtenir les différents coefficients de corrélation entre les différentes variables de notre jeu de données, on utilise la fonction `rcorr` se trouvant dans la librairie `Hmisc` :
 
 ```{r}
-Hmisc::rcorr(as.matrix(data))
+Hmisc::rcorr(as.matrix(data))[1]$r
 ```
+
+On remarque qu'il y a très peu de coefficient négatif entre les variables, et que ces coefficients sont relativement faible, les seuls coefficients de corrélation négatif ayant une valeur "correcte" sont ceux entre :
+
+* L'orthographe et la technologie (-0.29)
+* La grammaire et la technologie (-0.17)
+* L'anglais et la technologie (-0.22)
+* L'anglais et l'éducation physique et sportive (-0.27)
+* La biologie et la technologie (-0.17)
+* L'éducation physique et sportie et l'exposé (-0.22)
+
+La technologie est souvent négativement corrélé avec les autres disciplines, cela n'est pas étonnant, en effet, cette matière est relativement à part et n'a pas de relation avec les autres, elle est très probablement peu travaillé par rapport aux autres.
+
+Tout comme l'EPS qui n'a aucun rapport avec des matières comme l'anglais ou l'exposé, il n'est donc pas étonnant de voir un coefficient de corrélation négatif entre ces disciplines.
 
 ## Question 4 : Nombre de composantes principales à retenir
 
-On obtient les valeurs propres grâce à la variable :
+Pour rappel, on obtient les valeurs propres des dimensions grâce à la variable :
 
 ```{r}
 data.pca$eig
 ```
 
-Il y a 3 critères pour déterminer le nombre d'axes à retenir :
+Il y a 3 critères pour déterminer le nombre d'axes à retenir pour notre analyse, ce sont :
 
 * La part d'inertie cumulée supérieure à 80%
 * La comparaison avec la moyenne
-* La règle du coude (ou règle de Kaiser)
+* La règle du coude (également appellée règle de Kaiser)
 
 Nous allons pour chacun de ces critères, déterminer le nombre de composantes principales à retenir.
 
 ### Part d'inertie cumulée
 
-Pour ce critère, nous devons additionner les valeurs propres des axes jusqu'à obtenir un pourcentage cumulé supérieur à 80%, grâce au tableau au dessus, nous pouvons retenir les 6 premières composantes qui à elles seules réprésentes un peu plus 84% de l'information totale.
+Pour ce critère, nous devons additionner les valeurs propres des axes jusqu'à obtenir un pourcentage cumulé supérieur à 80%, grâce au tableau ci-dessus, nous pouvons retenir les 6 premières composantes qui à elles seules réprésentent un peu plus 84% de l'information totale.
 
 ### Comparaison avec la moyenne
 
-On commence par calculer la moyenne des pourcentages des valeurs propres, obtenu grâce à :
+Pour utiliser ce critère, on commence par calculer la moyenne des pourcentages des valeurs propres, obtenu grâce à :
 
 ```{r}
 mean(data.pca$eig[,2])
 ```
 
-On retient les composantes principales dont le pourcentage est supérieur à cette moyenne, c'est à dire que nous pouvons retenir les 5 premières composantes principales en utilisant ce critère.
+Puis nous retenons les composantes principales dont le pourcentage d'inertie est supérieur à cette moyenne, dans notre cas, nous pouvons retenir les 5 premières composantes principales en utilisant ce critère.
 
 ### Critère de coude
 
@@ -118,39 +172,47 @@ Pour utiliser ce critère, nous devons d'abord tracer le graphique suivant :
 barplot(data.pca$eig[,2])
 ```
 
-Selon le critère du coude, nous pouvons retenir 3 composantes principales.
+On recherche l'apparition d'un coude, sur notre graphique, le coude apparaît entre le 3e et 4e dimension, donc selon ce critère nous pouvons retenir 3 composantes principales.
 
 ### Conclusion
 
-On retiens donc 5 composantes principales pour notre analyse.
+Nous décidons de retenir 5 composantes principales pour notre analyse.
 
 ## Question 5 : Interprétation des 3 premiers axes par rapport aux disciplines
 
-On recupère les données des disciplines sur les différents axes grâce à la variable :
+On recupère les données (contribution, qualité de représentation et coordonnées) des disciplines sur les différentes dimensions grâce à la variable :
 
 ```{r}
 data.pca$var
 ```
 
+Pour chacune des 3 premières dimensions, nous allons retenir les disciplines ayant une contribution supérieure à la moyenne, et nous allons noté :
+
+* La valeur de sa contribution
+* La valeur de sa qualité de représentation selon cet axe
+* Le signe
+
 ### Dim 1. (34,11%)
 
 | Disciplines | Contribution | Qualité | Signe |
-| :------ | :------: | :-----: | -----: |
+| ------ | ------ | ----- | ----- |
 | EXPR | 16.00 | 0.76 | + |
 | MATH | 11.26 | 0.53 | + |
 | HIST | 10.21 | 0.48 | + |
-| ART | 12.03 | 0.57 | + |
+| ARTS | 12.03 | 0.57 | + |
 | ANGL | 9.15 | 0.44 | + |
 | ORTH | 8.86 | 0.43 | + |
 | EDMU | 8.71 | 0.41 | + |
 | EXPO | 7.14 | 0.34 | + |
+| Somme | 83.36 |
 
 Les disciplines retenus expliquent à elles seules 83.36% de l'information portée par la dimension 1, on remarque que sur cet axe, toutes les coordonnées des variables sont positives, cet axe n'oppose donc aucune variable.
+Il y a donc un lien entre l'expression écrite (EXPR), les mathématiques (MATH), l'histoire (HIST), les arts plastiques (ARTS), l'anglais (ANGL), l'orthographe (ORTH), l'éducation musicale (EDMU) et l'exposé (EXPO).
 
 ### Dim. 2 (17.09%)
 
 | Discipline     | Contribution | Qualité | Signe |
-| :------------- | :----------: | :-----: | ----: |
+| ------------- | -------- | ----- | ---- |
 | ORTH           | 10.14        | 0.24    |   -   |
 | GRAM           | 9.86         | 0.24    |   -   |
 | RECI           | 14.80        | 0.35    |   +   |
@@ -158,20 +220,24 @@ Les disciplines retenus expliquent à elles seules 83.36% de l'information port�
 | EDMU           | 11.96        | 0.29    |   +   |
 | TECH           | 11.09        | 0.27    |   +   |
 | EPS            | 7.80         | 0.19    |   +   |
+| Somme | 79.81 |
 
-Les disciplines retenus expliquent 79.81% de l'information portée par la dimension 2, en regardant le signe des variables sur cet axe, nous pouvons dire que la dimension 2 oppose les matières récitation, education musicale, technologie et EPS aux matières orthographe, grammaire et anglais.
+Les disciplines retenus expliquent 79.81% de l'information portée par la dimension 2, en regardant le signe des variables sur cet axe, nous pouvons dire que la dimension 2 oppose la récitation (RECI), l'éducation musicale (EDMU), la technologie (TECH) et l'EPS aux matières orthographe (ORTH), grammaire (GRAM) et anglais (ANGL).
+
+On remarque qu'on retrouve cette oposition dans les coefficients de corrélations entre ces disciplines.
 
 ### Dim. 3 (10.7%)
 
 | Disciplines | Contribution | Qualité | Signe |
-| :---- | :------: | :-----: | -----: |
+| ---- | ------ | ----- | ----- |
 | EPS | 24.16 | 0.36 | + |
 | GEO | 19.5 | 0.29 | + |
 | TECH | 14.5 | 0.22 | - |
 | EXPO | 13.72 | 0.21 | - |
 | RECI | 9.20 | 0.14 | - |
+| Somme | 81.08 |
 
-Les disciplines retenus expliquent 81.08% de l'information portée par la dimension 3, cet axe met en opposition l'EPS et la géographie à la technologie, l'exposé et la récitation.
+Les disciplines retenus expliquent 81.08% de l'information portée par la dimension 3, cet axe met en opposition l'EPS et la géographie (GEO) à la technologie (TECH), l'exposé (EXPO) et la récitation (RECI).
 
 ## Question 6 : Cercle de corrélation
 
