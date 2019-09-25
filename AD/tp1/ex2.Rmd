@@ -241,24 +241,29 @@ Les disciplines retenus expliquent 81.08% de l'information portée par la dimens
 
 ## Question 6 : Cercle de corrélation
 
-On obtient le cercle de corrélation avec la fonction plot.PCA dans la librairie FactoMineR :
+On obtient le cercle de corrélation avec la fonction `plot.PCA` dans la librairie `FactoMineR` :
 
 ```{r}
 FactoMineR::plot.PCA(data.pca, axes = c(1,2), choix = "var")
 ```
 
-On remarque que suivant l'axe 1, toutes les variables sont positives, cet axe n'oppose aucune variable, elles sont toutes liées entre elles, si l'une de ces variables est grande, alors le reste des variables le sera aussi (mais faiblement dans le cas de la technologie ou l'EPS)
+On remarque que suivant l'axe 1, toutes les variables sont représentés positivement, cet axe n'oppose donc aucune variable / discipline, elles sont toutes liées entre elles, si la valeur de l'une de ces matières est grande, alors la valeur du reste des matières le sera aussi (mais faiblement voir nul dans le cas de la technologie ou l'EPS étant donné que les flèches sont quasiment orthogonales à l'axe 1, et cela repose encore sur les coefficients de corrélation de ces 2 disciplines avec les autres)
 
-Les disciplines les mieux représentés dans ce plan sont les suivantes :
+Les disciplines les mieux représentés dans ce plan formé des 2 premiers axes sont les suivantes :
 
-* l'éducation musicale
-* l'expression écrite
-* l'anglais
-* l'orthographe
+* l'éducation musicale (EDMU)
+* l'expression écrite (EXPR)
+* l'anglais (ANGL)
+* l'orthographe (ORTH)
 
 ## Question 7 : Interprétation
 
-On peut déduire de ce phénomène que si un élève est plutôt bon dans une de ces matières, il sera également bon dans les autres, et inversement, si il a de mauvaises notes dans une de celles-ci, il est fortement probable qu'il en a des mauvaises dans les autres également.
+La majorité des matières étant corrélés positivement, on peut déduire de ce phénomène que si un élève est plutôt bon dans une de ces matières, il sera également bon dans les autres, et inversement, si il a de mauvaises notes dans une de celles-ci, il est fortement probable qu'il en a des mauvaises dans les autres également.
+
+On peut présumer qu'il y a 2 types d'élèves dans cette classe :
+
+* Ceux travaillant dans chacune de ces disciplines et donc ayant une bonne moyenne dans celles-ci
+* Ceux ne travaillant pas dans aucunes matières et donc ayant une moyenne faible dans celles-ci
 
 ## Question 8 : Contribution de certains élèves
 
@@ -269,6 +274,7 @@ data.pca$ind$contrib[c("EL10","EL12"),c("Dim.1","Dim.2")]
 ```
 
 On remarque que les 2 élèves contribuent fortement au premier axe factoriel, tandis que seul l'élève EL10 contribue au deuxième axe factoriel.
+
 Nous pouvons interpréter ces résultats en disant que ces 2 élèves ont une bonne moyenne en expression écrite, en mathématiques, en biologie, en art plastique, en histoire.
 Tandis que seul l'élève EL10 a de bonne note en technologie, sport et récitation.
 
@@ -281,8 +287,13 @@ data.pca$ind$contrib[,c("Dim.1","Dim.2","Dim.3")]
 ```
 
 Pour la dimension 1, les élèves qui l'expliquent sont : 1,9,10,12,21,23,24
+
 Pour la dimension 2, les élèves qui l'expliquent sont : 1,13,16,17,19,21,22,23,26
+
 Pour la dimension 3, les élèves qui l'expliquent sont : 3,4,7,13,20,23,24,25
 
-# Question 10
+# Question 10 : Résumé
 
+En résumé, nous pouvons dire que la plupart des matières (les matières principales) sont liées entre elles, elles sont donc enseignées équitablement, l'une ne prends pas l'ascendant sur une autre et inversement, les cours sont donc variées et enseignés en période égale.
+
+La seule différence est avec la technologie et l'éducation physique et sportive, ces 2 disciplines sont à part et n'ont aucun lien avec les autres, nous pouvons dire que ces 2 matières possèdent moins d'heure que les autres et que vu qu'elles ne sont pas des matières "logiques" il est normal qu'il n'existe pas de lien notable entre celles-ci et les autres matières.
