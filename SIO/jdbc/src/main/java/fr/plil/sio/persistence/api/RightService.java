@@ -51,4 +51,6 @@ public interface RightService {
      * @throws IllegalArgumentException if id is null
      */
     Right findOne(Long id);
+
+    List<Right> findByGroupId(Long id);
 }

@@ -8,9 +8,15 @@ public interface RightRepository {
 
     List<Right> findByName(String name);
 
+    List<Right> findByParentId(Long id);
+
+    List<Right> findByGroupId(Long id);
+
     Right findOne(Long id);
 
-    void delete(Long name);
+    int delete(Long id);
 
     void save(Right right);
+
+    void save(Right right, Right parent);
 }

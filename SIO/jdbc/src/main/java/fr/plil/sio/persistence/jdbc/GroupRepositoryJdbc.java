@@ -7,6 +7,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
+import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.sql.Statement;
@@ -27,10 +28,10 @@ public class GroupRepositoryJdbc implements GroupRepository {
             stmt = dataSource.getConnection().createStatement();
             rs = stmt.executeQuery("SELECT * FROM GROUP_T WHERE NAME_C = \'" + name + "\'");
             if (rs.next()) {
-                logger.debug("found group " + name);
                 Group group = new Group();
                 group.setId(rs.getLong("GROUP_ID"));
                 group.setName(rs.getString("NAME_C"));
+
                 return group;
             } else {
                 logger.debug("not found " + name);
@@ -56,6 +57,7 @@ public class GroupRepositoryJdbc implements GroupRepository {
     public void save(Group group) {
         Statement stmt = null;
         ResultSet rs = null;
+
         try {
             stmt = dataSource.getConnection().createStatement();
             stmt.executeUpdate("INSERT INTO GROUP_T (NAME_C) VALUES (\'" + group.getName() + "\')",
@@ -80,11 +82,30 @@ public class GroupRepositoryJdbc implements GroupRepository {
                 throw new UnsupportedOperationException("sql exception during close", e);
             }
         }
-
     }
 
     @Override
-    public void delete(Long id) {
-        throw new IllegalStateException("not implemented !");
+    public int delete(Long id) {
+        Statement stmt = null;
+
+        try {
+            stmt = this.dataSource.getConnection().createStatement();
+
+            String request = "DELETE FROM GROUP_T WHERE GROUP_ID = ?";
+            PreparedStatement preparedStatement = this.dataSource.getConnection().prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
+
+            preparedStatement.setLong(1, id);
+            return preparedStatement.executeUpdate();
+        } catch (SQLException e) {
+            throw new UnsupportedOperationException("sql exception", e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                throw new UnsupportedOperationException("sql exception during close", e);
+            }
+        }
     }
 }

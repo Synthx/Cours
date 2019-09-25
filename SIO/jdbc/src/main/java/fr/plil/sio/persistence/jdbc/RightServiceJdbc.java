@@ -29,7 +29,7 @@ public class RightServiceJdbc implements RightService {
 
     @Override
     public Right create(String name, Right parent) {
-        if (name == null || parent == null) {
+        if (name == null || parent == null || parent.getId() == null) {
             throw new IllegalArgumentException("name or parent cannot be null");
         }
 
@@ -42,7 +42,7 @@ public class RightServiceJdbc implements RightService {
         right.setName(name);
         right.setParent(databaseParentObject);
 
-        this.rightRepository.save(right);
+        this.rightRepository.save(right, databaseParentObject);
 
         parent.getSiblings().add(right);
 
@@ -51,7 +51,21 @@ public class RightServiceJdbc implements RightService {
 
     @Override
     public boolean delete(Right right) {
-        throw new IllegalStateException("not implemented !");
+        if (right == null || right.getId() == null) {
+            throw new IllegalArgumentException("right cannot be null");
+        }
+
+        Right databaseObject = this.rightRepository.findOne(right.getId());
+
+        // Delete siblings right
+        for (Right r : databaseObject.getSiblings()) {
+            this.rightRepository.delete(r.getId());
+        }
+
+        // Then delete parent right
+        int affectedRows = this.rightRepository.delete(right.getId());
+
+        return affectedRows > 0;
     }
 
     @Override
@@ -69,6 +83,17 @@ public class RightServiceJdbc implements RightService {
             throw new IllegalArgumentException("id cannot be null");
         }
 
-        return this.rightRepository.findOne(id);
+        Right right = this.rightRepository.findOne(id);
+
+        if (right != null) {
+            right.setSiblings(this.rightRepository.findByParentId(right.getId()));
+        }
+
+        return right;
+    }
+
+    @Override
+    public List<Right> findByGroupId(Long id) {
+        return this.rightRepository.findByGroupId(id);
     }
 }
