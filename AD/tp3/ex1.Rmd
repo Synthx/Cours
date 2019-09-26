@@ -1,9 +1,13 @@
 ---
-title: "Enquête de la régie française du tabac"
-author: "Rémi Taniel"
+title: "Réalisation d'une ACM"
+author: "Rémi Taniel, Clara Maignan, Vincent Rosset, Hugo Delegue"
 date: "24/09/2019"
-output: pdf_document
+output: 
+  pdf_document:
+    toc: true
 ---
+
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -30,16 +34,16 @@ Notre jeu de données comporte 14 obervations (14 réponses) et 4 variables (les
 
 Les réponses à la seconde question (quelle est la couleur de tes cheveux) sont :
 
-* BLO: BLOND
+* BLO: Blond
 * BRU: Brun
 * NOIR: Noir
 * CHA: Chatain
 
-Puis la région de naissance :
+Puis pour la région de naissance :
 
 * HDF: Haut De France:
 * IDF: Ile de France
-* EST: Est
+* PDLNORM: Pays de la Loire et Normandie
 * SUD: Sud
 * Autre: à l'étranger
 
@@ -126,114 +130,72 @@ Pour obtenir les données des 4 premiers axes en fonction des modalités, on uti
 data.mca$var
 ```
 
-Pour chacune ds 4 dimensions, nous allons retenir les marques dont la contribution est supérieure à la moyenne (soit 8.33), puis pour chacune des marques retenues, nous allons noter la qualité de leur répresentation sous cet axe, ainsi que le signe de ses coordonnées.
+Pour chacune des 4 dimensions, nous allons retenir les variables dont la contribution est supérieure à la moyenne (soit 8.33), puis pour chacune des marques retenues, nous allons noter la qualité de leur répresentation sous cet axe, ainsi que le signe de ses coordonnées.
 
 ### Dimension 1
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| Corsaire | 37.57 | 0.63 | + |
-| Hotesse | 14.38 | 0.34 | + |
-| Zodiac | 11.50 | 0.54 | + |
-| Orly | 9.05 | 0.47 | - |
-| Somme | 72.50 |
 
-Ces 4 marques représentent plus de 70% de l'information totale expliquée par le premier axe, il permet de mettre en opposition les marques `Corsaire`, `Hotesse`, `Zodiac` et `Orly`.
 
 ### Dimension 2
 
-| Marque | Contribution | Qualité | Signe |
+| Mddalité | Contribution | Qualité | Signe |
 | ----- | ---- | ---- | ---- |
-| Escale | 27.97 | 0.85 | + |
-| Directoire | 25.77 | 0.55 | - |
-| Hotesse | 24.73 | 0.46 | + |
-| Somme | 78.47 |
+| F | 17.4 | 0.583 | - |
+| H | 17.4 | 0.583 | + |
+| BLO | 16.1 | 0.378 | - |
+| BRU | 14.8 | 0.435 | + |
+| PDLNORM | 14.2 | 0.277 | - |
+| Somme | 79.9 | 
 
-Les 3 marques retenus expliquent à elles seuls 78.47% de l'information portée par la dimension 2, de plus on voit apparaître une opposition entre les marques `Escale`, `Hotesse` et `Directoire`.
+Ces 5 modalités représentent 79.9% de l'information totale portée par la dimension 2, cet axe oppose les variables Homme (`H`) et Brund (`BRU`) aux variables Femmes (`F`), Blond (`BLO`) et Pays de la Loire Normandie (`PDLNORM`).
 
 ### Dimension 3
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| Alezan | 49.97 | 0.62 | + |
-| Directoire | 19.52 | 0.32 | - |
-| Cocker | 16.32 | 0.36 | + |
-| Somme | 85.81 |
 
-Nous retenons ces 3 marques qui représentent un peu plus de 85% de l'information portée par l'axe 3, cette dimension met en lumière une opposition entre les marques de cigarettes `Alezan`, `Cocker` et `Directoire`.
 
 ### Dimension 4
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| Corsaire | 37.24 | 0.28 | + |
-| Cocker | 19.13 | 0.32 | - |
-| Zodiac | 17.25 | 0.36 | - |
-| Aleza | 15.11 | 0.14 | + |
-| Somme | 88.73 |
 
-Pour la dimension 4, on décide de retenir ces 4 marques de cigarettes, elles représentent 88.73% de l'information portée par cet axe et met en opposition `Corsaire` et `Aleza` à `Cocker` et `Zodiac`.
 
-## Analyse des quatres premiers axes en fonction des attributs
+## Analyse des quatres premiers axes en fonction des individus
 
-Nous allons reprendre la même méthode que précédemment mais en l'appliquant aux lignes et non plus aux colonnes, on utilise les données suivantes :
+Nous allons reprendre la même méthode que précédemment mais en l'appliquant aux individus et non plus aux modalités, dans ce cas on utilisera les données suivantes :
 
 ```{r}
-data.ca$row
+data.mca$ind
 ```
 
 Comme précédemment, pour chaque dimension, 
 
 ### Dimension 1
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| vulg | 28.77 | 0.65 | + |
-| dist | 20.93 | 0.64 | - |
-| coca | 20.79 | 0.60 | + |
-| nouv | 12.83 | 0.40 | - |
-| Somme | 83.32 |
 
-Ces 4 attributs expliquent plus de 80% de l'information portée par l'axe 1, celui-ci oppose vulgaire-commun (`vulg`) et cocasse-ridicule (`coca`) à distingué (`dist`) et nouveau-riche (`nouv`).
 
 ### Dimension 2
 
-| Marque | Contribution | Qualité | Signe |
+| Individu | Contribution | Qualité | Signe |
 | ----- | ---- | ---- | ---- |
-| viel | 33.68 | 0.51 | - |
-| fem | 39.89 | 0.74 | + |
-| vulg | 11.48 | 0.20 | + |
-| Somme | 85.05 |
+| EL11 | 23.3 | 0.57 | + |
+| EL1 | 18.7 | 0.46 | + |
+| EL7 | 12 | 0.47 | - |
+| EL12 | 12 | 0.47 | - |
+| Somme | 66 |
 
-On ne retient que 3 attributs pour la 2e dimension, celles-ci expliquent 85% de l'information portée par cet axe, celui-ci met en opposition les attributs femme (`fem`) et vulgaire-commun (`vulg`) à vieillot-désuet (`viel`).
-
+Ces 4 individus expliquent 66% de l'information portée par l'axe 2. Il oppose l'EL11 et 1 aux élèves 7 et 12.
 ### Dimension 3
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| racé | 45.46 | 0.74 | + |
-| viel | 32.91 | 0.38 | - |
-| Somme | 78.37 |
 
-On ne retient que 2 attributs sur la dimension 3, néanmoins ces 2 attributs expliquent quasiment 80% de l'information portée par l'axe analysé, et oppose l'attribut racé (`racé`) à l'attribut vieillot-désuet (`viel`).
 
 ### Dimension 4
 
-| Marque | Contribution | Qualité | Signe |
-| ----- | ---- | ---- | ---- |
-| petit | 26.39 | 0.56 | - |
-| hom | 21.28 | 0.55 | + |
-| coca | 12.11 | 0.16 | - |
-| vulg | 12.37 | 0.12 | + |
-| Somme | 72.15 |
 
-Pour la dimension 4, les attributs retenus représentent un peu plus de 70% de l'information portée par la dimension 4, celle-ci oppose les attributs petit (`petit`) et cocasse-ridicule (`coca`) aux attributs homme (`hom`) et vulgaire-commun (`vulg`).
 
 ## Interprétation du premier plan factoriel
 
 On peut obtenir les projections des marques et des attributs dans le premier plan factoriel grâce à :
 
 ```{r}
-
+plot.MCA(data.mca, axes = c(1, 2))
 ```
 
+l'axe2 oppose les hommes bruns représentés par les EL12 et 7 aux femmes blondes représentées par les EL11 et 1.
