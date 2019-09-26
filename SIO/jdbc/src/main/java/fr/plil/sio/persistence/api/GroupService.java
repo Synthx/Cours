@@ -51,4 +51,6 @@ public interface GroupService {
      * @throws IllegalArgumentException if groupName or right is null, or if group or right cannot be found.
      */
     boolean removeRight(String groupName, Right right);
+
+    Group findById(Long id);
 }

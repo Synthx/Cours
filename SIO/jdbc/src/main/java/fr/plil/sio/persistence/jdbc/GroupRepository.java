@@ -6,7 +6,9 @@ public interface GroupRepository {
 
     Group findByName(String name);
 
-    int delete(Long id);
+    Group findById(Long id);
+
+    int delete(String name);
 
     void save(Group group);
 }

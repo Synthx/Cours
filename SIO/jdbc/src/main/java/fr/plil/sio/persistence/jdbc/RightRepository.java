@@ -1,5 +1,6 @@
 package fr.plil.sio.persistence.jdbc;
 
+import fr.plil.sio.persistence.api.Group;
 import fr.plil.sio.persistence.api.Right;
 
 import java.util.List;
@@ -19,4 +20,8 @@ public interface RightRepository {
     void save(Right right);
 
     void save(Right right, Right parent);
+
+    void updateGroup(Right right, Group group);
+
+    void deleteGroup(Right right);
 }

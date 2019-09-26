@@ -24,6 +24,8 @@ public interface UserService {
      */
     boolean delete(String name);
 
+    boolean deleteByGroupId(Long id);
+
     /**
      * Find an user in the database based on its name.
      *

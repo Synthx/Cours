@@ -28,6 +28,8 @@ public abstract class AbstractServiceSupport {
         requests.add("CREATE TABLE RIGHT_T (RIGHT_ID INT NOT NULL AUTO_INCREMENT, PARENT_ID INT, " +
                 "NAME_C VARCHAR(50) NOT NULL, GROUP_ID INT, PRIMARY KEY(RIGHT_ID), FOREIGN KEY(PARENT_ID) REFERENCES RIGHT_T(RIGHT_ID), " +
                 "FOREIGN KEY(GROUP_ID) REFERENCES GROUP_T(GROUP_ID))");
+        requests.add("CREATE TABLE USER_T (USER_ID INT NOT NULL AUTO_INCREMENT, NAME_C VARCHAR(50) UNIQUE NOT NULL, " +
+                "GROUP_ID INT, PRIMARY KEY(USER_ID), FOREIGN KEY(GROUP_ID) REFERENCES GROUP_T(GROUP_ID))");
 
         this.openConnection();
 
@@ -43,6 +45,7 @@ public abstract class AbstractServiceSupport {
         List<String> requests = new ArrayList<>();
         requests.add("DROP TABLE GROUP_T");
         requests.add("DROP TABLE RIGHT_T");
+        requests.add("DROP TABLE USER_T");
 
         this.openConnection();
 

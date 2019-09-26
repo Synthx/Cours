@@ -1,5 +1,6 @@
 package fr.plil.sio.persistence.jdbc;
 
+import fr.plil.sio.persistence.api.Group;
 import fr.plil.sio.persistence.api.Right;
 import fr.plil.sio.persistence.api.RightService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -95,5 +96,15 @@ public class RightServiceJdbc implements RightService {
     @Override
     public List<Right> findByGroupId(Long id) {
         return this.rightRepository.findByGroupId(id);
+    }
+
+    @Override
+    public void updateGroup(Right right, Group group) {
+        this.rightRepository.updateGroup(right, group);
+    }
+
+    @Override
+    public void deleteGroup(Right right) {
+        this.rightRepository.deleteGroup(right);
     }
 }

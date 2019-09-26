@@ -53,4 +53,8 @@ public interface RightService {
     Right findOne(Long id);
 
     List<Right> findByGroupId(Long id);
+
+    void updateGroup(Right right, Group group);
+
+    void deleteGroup(Right right);
 }

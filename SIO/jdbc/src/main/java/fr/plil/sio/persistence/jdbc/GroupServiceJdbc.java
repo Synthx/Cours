@@ -1,9 +1,6 @@
 package fr.plil.sio.persistence.jdbc;
 
-import fr.plil.sio.persistence.api.Group;
-import fr.plil.sio.persistence.api.GroupService;
-import fr.plil.sio.persistence.api.Right;
-import fr.plil.sio.persistence.api.RightService;
+import fr.plil.sio.persistence.api.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -15,6 +12,9 @@ public class GroupServiceJdbc implements GroupService {
 
     @Autowired
     private RightService rightService;
+
+    @Autowired
+    private UserService userService;
 
     @Autowired
     private GroupRepository groupRepository;
@@ -42,13 +42,13 @@ public class GroupServiceJdbc implements GroupService {
 
         // Group exist ?
         Group group = this.groupRepository.findByName(name);
-        if (group == null) {
-            return false;
+
+        // Delete group users too if group exist
+        if (group != null) {
+            this.userService.deleteByGroupId(group.getId());
         }
 
-        int affectedRows = this.groupRepository.delete(group.getId());
-
-        return affectedRows > 0;
+        return this.groupRepository.delete(name) > 0;
     }
 
     @Override
@@ -93,6 +93,9 @@ public class GroupServiceJdbc implements GroupService {
 
         groupRights.add(right);
 
+        // Save right to database
+        this.rightService.updateGroup(right, group);
+
         return true;
     }
 
@@ -122,6 +125,18 @@ public class GroupServiceJdbc implements GroupService {
 
         group.setRights(groupRights.stream().filter(r -> !r.getId().equals(right.getId())).collect(Collectors.toList()));
 
+        // Save right to database
+        this.rightService.deleteGroup(right);
+
         return true;
+    }
+
+    @Override
+    public Group findById(Long id) {
+        if (id == null) {
+            throw new IllegalArgumentException("id cannot be null");
+        }
+
+        return this.groupRepository.findById(id);
     }
 }
