@@ -56,7 +56,7 @@ public class RightServiceJdbc implements RightService {
             throw new IllegalArgumentException("right cannot be null");
         }
 
-        Right databaseObject = this.rightRepository.findOne(right.getId());
+        Right databaseObject = this.findOne(right.getId());
 
         // Delete siblings right
         for (Right r : databaseObject.getSiblings()) {
@@ -64,7 +64,7 @@ public class RightServiceJdbc implements RightService {
         }
 
         // Then delete parent right
-        int affectedRows = this.rightRepository.delete(right.getId());
+        int affectedRows = this.rightRepository.delete(databaseObject.getId());
 
         return affectedRows > 0;
     }

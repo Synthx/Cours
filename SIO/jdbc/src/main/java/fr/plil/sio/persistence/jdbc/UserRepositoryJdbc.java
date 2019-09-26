@@ -110,7 +110,25 @@ public class UserRepositoryJdbc implements UserRepository {
 
     @Override
     public int deleteByGroupId(Long id) {
-        return 0;
+        PreparedStatement stmt = null;
+
+        try {
+            String request = "DELETE FROM USER_T WHERE GROUP_ID = ?";
+            stmt = this.dataSource.getConnection().prepareStatement(request);
+            stmt.setLong(1, id);
+
+            return stmt.executeUpdate();
+        } catch (SQLException e) {
+            throw new UnsupportedOperationException("sql exception", e);
+        } finally {
+            try {
+                if (stmt != null) {
+                    stmt.close();
+                }
+            } catch (SQLException e) {
+                throw new UnsupportedOperationException("sql exception during close", e);
+            }
+        }
     }
 
     private User buildObject(ResultSet rs) throws SQLException {
