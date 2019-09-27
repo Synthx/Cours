@@ -34,6 +34,8 @@ public class VirementCompte {
 			
 			compteDebiteur.getConnection().setAutoCommit(false);
 			compteCrediteur.getConnection().setAutoCommit(false);
+			compteDebiteur.getConnection().setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
+			compteCrediteur.getConnection().setTransactionIsolation(Connection.TRANSACTION_SERIALIZABLE);
 			
 			System.out.println("Avant opération :");
 			System.out.println("compte débit : " + compteDebiteur.getIdClient() + ", solde : " + compteDebiteur.getSolde());
