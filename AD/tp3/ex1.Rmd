@@ -1,6 +1,6 @@
 ---
 title: "Réalisation d'une ACM"
-author: "Rémi Taniel, Clara Maignan, Vincent Rosset, Hugo Delegue"
+author: "Rémi Taniel, Clara Maignan, Vincent Rosset et Hugo Delegue"
 date: "24/09/2019"
 output: 
   pdf_document:
@@ -27,7 +27,7 @@ Puis on visualise les données grâce à la fonction str(...) :
 str(data)
 ```
 
-Notre jeu de données comporte 14 obervations (14 réponses) et 4 variables (les 3 questions et un libellé), on remarque également que toutes les variables sont des variables qualitatives, c'est à dire, le sexe :
+Notre jeu de données comporte 14 obervations (14 réponses) et 4 variables (les 3 questions et un libellé), on remarque également que toutes les variables sont des variables qualitatives, c'est à dire, pour le sexe de la personne interrogée :
 
 * H: Homme
 * F: Femme
@@ -53,7 +53,7 @@ On se décide de visualiser les 6 premières lignes de nos données ;
 head(data)
 ```
 
-On remarque que nous devons enlever la colonne libellé, on décide donc de formater nos données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera la variable libelle :
+On remarque que nous devons enlever la colonne `libelle`, on décide donc de formater nos données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera la variable `libelle` :
 
 ```{r}
 rownames(data) <- data$libelle
@@ -69,13 +69,11 @@ Pour réaliser l'ACM, nous aurons besoin du package FactoMineR :
 library(FactoMineR)
 ```
 
-Puis on range les résultats de l'ACM (valeurs propres, coordonnées, contribution) dans data.ca, dans notre cas, nous ne retenons que les 4 premiers axes et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
+Puis on range les résultats de l'ACM (valeurs propres, coordonnées, contribution) dans la variable `data.mca`, dans notre cas, nous ne retenons que les 5 premiers axes et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
 
 ```{r}
 data.mca <- FactoMineR::MCA(data, ncp = 5, graph = FALSE)
 ```
-
-(Explication de où se trouve les variables ?)
 
 # 3e partie : Analyse des résultats
 
@@ -92,7 +90,6 @@ Pour rappel, les valeurs propres des différents axes sont stockés dans :
 ```{r}
 data.mca$eig
 ```
-
 
 ### Part d'inertie supérieure à la moyenne
 
@@ -134,11 +131,19 @@ Pour chacune des 4 dimensions, nous allons retenir les variables dont la contrib
 
 ### Dimension 1
 
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| NOIR | 42.85714 | 1 | +|
+| AUTRE |42.85714 | 1 | + |
 
+La couleur de cheveux noir est la seule couleur qui contribue fortement à la dimension 1. A elle seule, elle
+représente plus de 40% de l’information de l’axe.
+La région de naissance AUTRE est la seule région qui contribue fortement à la dimension 1. A elle seule,
+elle représente plus de 40% de l’information de l’axe
 
 ### Dimension 2
 
-| Mddalité | Contribution | Qualité | Signe |
+| Modalité | Contribution | Qualité | Signe |
 | ----- | ---- | ---- | ---- |
 | F | 17.4 | 0.583 | - |
 | H | 17.4 | 0.583 | + |
@@ -147,15 +152,30 @@ Pour chacune des 4 dimensions, nous allons retenir les variables dont la contrib
 | PDLNORM | 14.2 | 0.277 | - |
 | Somme | 79.9 | 
 
-Ces 5 modalités représentent 79.9% de l'information totale portée par la dimension 2, cet axe oppose les variables Homme (`H`) et Brund (`BRU`) aux variables Femmes (`F`), Blond (`BLO`) et Pays de la Loire Normandie (`PDLNORM`).
+Ces 5 modalités représentent 79.9% de l'information totale portée par la dimension 2, cet axe oppose les variables Homme (`H`) et Brund (`BRU`) aux variables Femmes (`F`), Blond (`BLO`) et Pays de la Loire / Normandie (`PDLNORM`).
 
 ### Dimension 3
 
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| CHA | 36.52 | 0.64 | - |
+| PDLNORM | 27.49 | 0.48 | + |
+| SUD | 16.40 | 0.29 | - |
+| Somme | 80.41 |
 
+Les trois modalités de réponse explique 80,41% des 18,64% de l’information portée par l’axe 3. 
+Les modalités Chatain (`CHA`) et Sud (`SUD`) sont corrélées positivement entres elles et négativement avec la modalités Pays de la Loire / Normandie (`PDLNORM`)
 
 ### Dimension 4
 
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| HDF | 39.27 | 0.54 | + |
+| IDF | 26.58 | 0.45 | - |
+| Somme | 68.85 |
 
+Les deux modalités de réponse expliquant 65,84% des 13,49% de l’information portée par l’axe 4. 
+Les modalités Ile de France (`IDF`) et Haut de France (`HDF`) sont corrélées négativement entres elles.
 
 ## Analyse des quatres premiers axes en fonction des individus
 
@@ -165,11 +185,28 @@ Nous allons reprendre la même méthode que précédemment mais en l'appliquant 
 data.mca$ind
 ```
 
-Comme précédemment, pour chaque dimension, 
+Comme précédemment, pour chaque dimension, nous allons retenir les individus dont la contribution est supérieure à la moyenne qui est de :
+
+```{r}
+mean(data.mca$ind$contrib[,1])
+```
 
 ### Dimension 1
 
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| EL5 |42.86 | 0.92 | + |
+| EL8 |42.86 | 0.92 | + |
 
+Les élèves 5 et 8 contribuent fortement à la dimension 1. Ils représentent à eux deux près de 85% de la
+dimension. De plus, ces deux élèves sont très bien représentés sur l’axe avec un cos2 supérieur à 90. Enfin,
+l’EL1 et l’EL8 contribuent tous deux positivement à l’axe 1
+
+Nous avons vu que seulement les modalités des questions 2 et 3 contribuaient fortement à la dimension 1.
+La région AUTRE et la couleur de cheveux NOIR contribuent tous deux positivement à l’axe 1. Ainsi, on
+peut en déduire que l’axe 1 représente les élèves qui ont des cheveux noirs et qui sont nés hors de France.
+Enfin les élèves 5 et 8 contribuent tous deux positivement à l’axe 1. Cela laisse supposer qu’ils ont tous les
+deux les cheveux NOIRS et sont nés hors de france
 
 ### Dimension 2
 
@@ -181,21 +218,38 @@ Comme précédemment, pour chaque dimension,
 | EL12 | 12 | 0.47 | - |
 | Somme | 66 |
 
-Ces 4 individus expliquent 66% de l'information portée par l'axe 2. Il oppose l'EL11 et 1 aux élèves 7 et 12.
+Ces 4 individus expliquent 66% de l'information portée par l'axe 2. Il oppose l'EL11 et EL1 aux élèves EL7 et EL12.
+
 ### Dimension 3
 
+| Individu | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| EL9 | 49.27 | 0.79 | + |
+| EL3 | 13.35 | 0.33 | - |
+| EL6 | 11.69 | 0.27 | + |
+| EL11 | 11.17 | 0.25 | - |
+| Somme | 85.48 |
 
+Les individus EL9, EL3, EL6 et EL11 expliquent 85.48% de l’information portée par l’axe 3.
+Les individus EL3 et EL11 s’opposent aux individus EL6 et EL9 qui sont positivement corrélés avec l’axe 3. 
 
 ### Dimension 4
 
+| Individu | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| EL2 | 19.04 | 0.40 | + |
+| EL12 | 11.95 | 0.30 | + |
+| Somme | 30.99 |
 
+Les individus EL2 et EL12 expliquent 30.99% de l’information portée par l’axe 4.
+Les individus EL2 et EL12 sont positivement corrélés avec l’axe 4. 
 
 ## Interprétation du premier plan factoriel
 
 On peut obtenir les projections des marques et des attributs dans le premier plan factoriel grâce à :
 
 ```{r}
-plot.MCA(data.mca, axes = c(1, 2))
+FactoMineR::plot.MCA(data.mca, axes = c(1, 2))
 ```
 
-l'axe2 oppose les hommes bruns représentés par les EL12 et 7 aux femmes blondes représentées par les EL11 et 1.
+On remarque l'axe2 oppose les hommes bruns représentés par les EL12 et EL7 aux femmes blondes représentées par les EL11 et EL1.

@@ -1,0 +1,244 @@
+---
+title: "Réalisation d'une ACM"
+author: "Rémi Taniel"
+date: "30/09/2019"
+output: 
+  pdf_document:
+    toc: true
+---
+
+\newpage
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Introduction
+
+ 
+
+# 1ère partie : Importation des données
+
+On commence par importer les données grâce à :
+
+```{r}
+data <- read.table("/home/remi/Documents/Cours/AD/data/race.csv", sep = ",", dec = ".", colClasses = "factor", header = TRUE)
+```
+
+Puis on visualise les données grâce à la fonction str(...) :
+
+```{r}
+str(data)
+```
+
+Notre jeu de données comporte 27 obervations (27 races de chiens) et 8 variables (les 7 modalités et un libellé), on remarque également que toutes les variables sont des variables qualitatives, et ont 3 niveaux chacunes :
+
+* Faible : 1
+* Moyen : 2
+* Fort : 3
+
+On se décide de visualiser les 6 premières lignes de nos données ;
+
+```{r}
+head(data)
+```
+
+On remarque que nous devons enlever la colonne `race`, on décide donc de formater nos données pour donner un identifiant aux différentes lignes, dans notre cas, ce sera la variable `race` :
+
+```{r}
+rownames(data) <- data$Race
+data <- data[,-1]
+head(data)
+```
+
+# 2e partie : Mise en oeuvre de l'ACM
+
+Pour réaliser l'ACM, nous aurons besoin du package FactoMineR :
+
+```{r}
+library(FactoMineR)
+```
+
+Puis on range les résultats de l'ACM (valeurs propres, coordonnées, contribution) dans la variable `data.mca`, dans notre cas, nous ne retenons que les 5 premiers axes et on souhaite que les graphiques ne soient pas générés lors de l'appel de la fonction :
+
+```{r}
+data.mca <- FactoMineR::MCA(data, ncp = 5, quali.sup = c(7), graph = FALSE)
+```
+
+(Explication de où se trouve les variables ?)
+
+# 3e partie : Analyse des résultats
+
+## Nombre d'axe à retenir
+
+Pour connaître le nombre d'axe que nous devons retenir, nous pouvons utiliser 3 critères :
+
+* Part d'inertie supérieure à la moyenne
+* Part d'inertie cumulée supérieure à 80%
+* Critère du coude
+
+Pour rappel, les valeurs propres des différents axes sont stockés dans :
+
+```{r}
+data.mca$eig
+```
+
+### Part d'inertie supérieure à la moyenne
+
+Nous n'utiliserons qu'un seul critère, le critère de la part d'inertie moyenne, cette moyenne des part d'inertie expliquée par chaque axe peut être obtenue par :
+
+```{r}
+100/16
+```
+
+Selon ce critère, nous pouvons retenir les 5 premiers axes, qui possèdent tous une part d'inertie supérieure à la moyenne calculée qui est de 6.25%.
+
+### Part d'inertie cumulée supérieure à 80%
+
+Tout comme le précédent critère, nous retenons les 5 premiers axes, en effet, ces 5 dimensions expliquent 84,43% de l'inertie totale portée par nos données.
+
+### Critère du coude
+
+Afin d'appliquer ce critère, nous devons dans un premier temps, tracer le graphique suivant :
+
+```{r}
+barplot(data.mca$eig[,2])
+```
+
+Le coude apparaît entre la 4e et 5e dimension, donc en utilisant ce critère nous devons retenir 4 dimensions.
+
+### Conclusion sur le nombre d'axe à retenir
+
+Selon les 3 critères, nous devons seulement retenir les 5 premiers axes.
+
+## Analyse des 5 premiers axes en fonction des modalités
+
+Pour obtenir les données des 5 premiers axes en fonction des modalités, on utilisa l'information suivante :
+
+```{r}
+data.mca$var
+```
+
+Pour chacune des 4 dimensions, nous allons retenir les modalités dont la contribution est supérieure à la moyenne (soit 6.25), puis pour chacune des modalités retenues, nous allons noter la qualité de leur répresentation sous cet axe, ainsi que le signe de ses coordonnées.
+
+### Dimension 1
+
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Poids_1 | 14.01 | 0.58 | + |
+| Taille_3 | 13.32 | 0.87 | - |
+| Taille_1 | 12.56 | 0.49 | + |
+| Affection_1 | 10.75 | 0.60 | - | 
+| Affection_2 | 9.98 | 0.60 | + |
+| Velocite_3 | 9.76 | 0.43 | - |
+| Somme | 70.38 |
+
+### Dimension 2
+
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Velocite_1 | 17.36 | 0.64 | + |
+| Poids_2 | 14.89 | 0.71 | - |
+| Taille_2 | 12.24 | 0.34 | - |
+| Velocite_2 | 10.24 | 0.34 | - |
+| Taille_1 | 8.70 | 0.27 | + |
+| Intelligence_ 1 | 8.53 | 0.28 | + | 
+| Somme | 71.96 |
+
+### Dimension 3
+
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Poids_3 | 20.71 | 0.37 | +
+| Velocite_3 | 14.14 | 0.28 | - | 
+| Intelligence_2 | 13.21 | 0.32 | - | 
+| Intelligence_3 | 10.37 | 0.18 | + |
+| Taille_1 | 8.68 | 0.16 | - |
+| Somme | 67.44 |
+ 
+### Dimension 4
+
+| Modalité | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| Agressivite_2 | 27.74 | 0.53 | 
+| Agressivite_1 | 25.76 | 0.53 |
+| Intelligence_3 | 21.22 | 0.28 |
+| Intelligence_2 | 9.01 | 0.16 | 
+| Somme | 83.73 |
+
+## Analyse des dimensions
+
+## Analyse des 5 premiers axes en fonction des individus
+
+Nous allons reprendre la même méthode que précédemment mais en l'appliquant aux individus et non plus aux modalités, dans ce cas on utilisera les données suivantes :
+
+```{r}
+data.mca$ind
+```
+
+Comme précédemment, pour chaque dimension, on ne garde que les races canines ayant une contribution supérieure à la moyenne qui est de :
+
+```{r}
+mean(data.mca$ind$contrib[,1])
+```
+
+### Dimension 1
+
+| Individu | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| BULD | 8.17 | 
+| TECK | 8.17 | 
+| DA.L | 8 |
+| DOBE | 6.13 | 
+| FX.T | 6.06 | 
+| CANI | 5.93 |
+| CHIH | 5.45 |
+| PEKI | 5.45 |
+| FX.H | 5.83 |
+| COCK | 4.30 |
+| BULM | 4.20 |
+| Somme | 67.69 |
+
+### Dimension 2
+
+| Individu | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| BASS | 11.38 |
+| E.BR | 10.83 |
+| LABR | 9.36 |
+| DAL | 9.36 |
+| MAST | 8.04 |
+| BOXE | 7.37 |
+| PEKI | 6.35 |
+| CHIH | 6.35 |
+| Somme | 69.04 |
+
+### Dimension 3
+
+| Individu | Contribution | Qualité | Signe |
+| ----- | ---- | ---- | ---- |
+| ST-B | 13.75 |
+| T.NE | 10.03 |
+| BOXE | 7.23 |
+| CANI | 6.64 |
+| POIN | 6.01 |
+| BEAU | 5.72 |
+| B.AL | 5.72 |
+| MAST | 5.54 |
+| COCK | 5.18 |
+| LABR | 4.62 |
+| Somme | 70.44 |
+
+### Dimension 4
+
+
+
+## Interprétation du premier plan factoriel
+
+On peut obtenir les projections des marques et des attributs dans le premier plan factoriel grâce à :
+
+```{r}
+plot.MCA(data.mca, axes = c(1, 2))
+```
+
+l'axe2 oppose les hommes bruns représentés par les EL12 et 7 aux femmes blondes représentées par les EL11 et 1.
