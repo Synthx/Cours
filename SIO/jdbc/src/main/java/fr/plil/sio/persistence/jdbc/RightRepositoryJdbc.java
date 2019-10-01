@@ -181,13 +181,13 @@ public class RightRepositoryJdbc implements RightRepository {
     }
 
     @Override
-    public void updateGroup(Right right, Group group) {
+    public void saveGroupRight(Long id, Right right) {
         PreparedStatement stmt = null;
 
         try {
-            String request = "UPDATE RIGHT_T SET GROUP_ID = ? WHERE RIGHT_ID = ?";
+            String request = "INSERT INTO GROUP_RIGHT_T VALUES (?, ?)";
             stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, group.getId());
+            stmt.setLong(1, id);
             stmt.setLong(2, right.getId());
 
             stmt.executeUpdate();
@@ -205,14 +205,13 @@ public class RightRepositoryJdbc implements RightRepository {
     }
 
     @Override
-    public void deleteGroup(Right right) {
+    public void deleteGroupRightByGroupId(Long id) {
         PreparedStatement stmt = null;
 
         try {
-            String request = "UPDATE RIGHT_T SET GROUP_ID = ? WHERE RIGHT_ID = ?";
+            String request = "DELETE FROM GROUP_RIGHT_T WHERE GROUP_ID = ?";
             stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setNull(1, Types.NULL);
-            stmt.setLong(2, right.getId());
+            stmt.setLong(1, id);
 
             stmt.executeUpdate();
         } catch (SQLException e) {
@@ -269,7 +268,8 @@ public class RightRepositoryJdbc implements RightRepository {
         ResultSet rs = null;
 
         try {
-            String request = "SELECT * FROM RIGHT_T WHERE GROUP_ID = ?";
+            String request = "SELECT r.RIGHT_ID, r.NAME_C FROM GROUP_RIGHT_T g JOIN RIGHT_T r ON r.RIGHT_ID = g.RIGHT_ID " +
+                    "WHERE g.GROUP_ID = ? ";
             stmt = this.dataSource.getConnection().prepareStatement(request);
             stmt.setLong(1, id);
 

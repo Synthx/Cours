@@ -21,7 +21,7 @@ public interface RightRepository {
 
     void save(Right right, Right parent);
 
-    void updateGroup(Right right, Group group);
+    void deleteGroupRightByGroupId(Long id);
 
-    void deleteGroup(Right right);
+    void saveGroupRight(Long id, Right right);
 }

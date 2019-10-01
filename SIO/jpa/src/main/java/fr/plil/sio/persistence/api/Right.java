@@ -7,8 +7,8 @@ import java.util.List;
  * A right is unique by itd ID, i.e. it can exist two rights with the same name in the database.
  * A right may have a parent, null else.
  * A right can have zero, one or more siblings.
- * A right can have zero, one or more affected group.
  */
+
 public class Right {
 
     private Long id;
