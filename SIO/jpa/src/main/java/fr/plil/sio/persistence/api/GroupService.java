@@ -37,7 +37,7 @@ public interface GroupService {
      *
      * @param groupName the name of the group.
      * @param right     the right to add
-     * @return true if right is added in the group, false if right was already present.
+     * @return true if right is added in the group, false if the right was already present.
      * @throws IllegalArgumentException if groupName or right is null, or if group or right cannot be found.
      */
     boolean addRight(String groupName, Right right);
@@ -47,7 +47,7 @@ public interface GroupService {
      *
      * @param groupName the name of the group.
      * @param right     the right to remove
-     * @return true if right is removed from the group, false if teh right was not present in the group.
+     * @return true if right is removed from the group, false if the right was not present in the group.
      * @throws IllegalArgumentException if groupName or right is null, or if group or right cannot be found.
      */
     boolean removeRight(String groupName, Right right);

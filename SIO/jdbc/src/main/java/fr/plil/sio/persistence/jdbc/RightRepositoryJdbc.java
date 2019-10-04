@@ -1,14 +1,15 @@
 package fr.plil.sio.persistence.jdbc;
 
-import fr.plil.sio.persistence.api.Group;
 import fr.plil.sio.persistence.api.Right;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Repository;
 
 import javax.sql.DataSource;
-import java.sql.*;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
 import java.util.ArrayList;
-import java.util.LinkedList;
 import java.util.List;
 
 @Repository
