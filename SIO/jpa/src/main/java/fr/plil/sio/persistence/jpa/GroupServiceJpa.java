@@ -41,7 +41,7 @@ public class GroupServiceJpa implements GroupService {
             throw new IllegalArgumentException("name cannot be null");
         }
 
-        Group group = this.findByName(name);
+        Group group = this.groupRepository.findByName(name);
         if (group == null) {
             return false;
         }

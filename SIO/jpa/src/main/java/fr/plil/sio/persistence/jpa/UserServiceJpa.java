@@ -41,6 +41,8 @@ public class UserServiceJpa implements UserService {
         user.setName(name);
         user.setGroup(group);
 
+        group.getUsers().add(user);
+
         return this.userRepository.save(user);
     }
 
@@ -74,15 +76,23 @@ public class UserServiceJpa implements UserService {
             throw new IllegalArgumentException("right cannot be null");
         }
 
-        User user = this.findByName(userName);
+        User user = this.userRepository.findByName(userName);
         if (user == null) {
             throw new IllegalArgumentException("user cannot be found");
         }
 
         Right right1 = this.rightService.findOne(right.getId());
         if (right1 == null) {
-            throw new IllegalArgumentException("")
+            throw new IllegalArgumentException("right cannot be found");
         }
+
+        Group group = this.groupService.findByName(user.getGroup().getName());
+        if (group != null) {
+            return group.getRights().stream().map(Right::getId).map(rightService::findOne).anyMatch(r -> {
+                return r.getId().equals(right1.getId()) || r.getSiblings().stream().map(Right::getId).anyMatch(right1.getId()::equals);
+            });
+        }
+
         return false;
     }
 }
