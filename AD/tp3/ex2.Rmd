@@ -241,4 +241,91 @@ On peut obtenir les projections des marques et des attributs dans le premier pla
 plot.MCA(data.mca, axes = c(1, 2))
 ```
 
-l'axe2 oppose les hommes bruns représentés par les EL12 et 7 aux femmes blondes représentées par les EL11 et 1.
+# 3e partie : Clasification ascendate hiérarchique sur les axes retenus
+
+Pour rappel, nous avons retenus les 4 premiers axes factoriels qui représentent 75% de l'information totale. Notre classification se portera donc seulement sur ces axes.
+
+## Réalisation sous R
+
+Pour notre étude, nous aurons besoins des librairies suivantes :
+
+```{r}
+library(plyr)
+library(philentropy)
+library(factoextra)
+library(ggplot2)
+```
+
+On stocke ensuite les résultats du CAH dans la variable `data.hcpc` et on décide de ne pas afficher les graphiques tout de suite :
+
+```{r}
+data.hcpc <- FactoMineR::HCPC(data.mca, nb.clust = 4, proba = 1, graph = FALSE)
+```
+
+## Interprétation et analyse des résultats
+
+### Typologie en 4 classes
+
+Classification de départ, chaque individu = 1 groupe, tout ceux qui s'accroche avant sont des éléments qui se ressemblent, ont des proximités, mesure le degré de regroupement des branches (indice d'inertie), la somme est égale à l'inertie totale et nous permet de mesurer le niveau d'aggrégation des branches, plus l'indice est élevé plus les branches sont distinctes et inversement, le nombre de classe dépends du niveau de coupure de notre indice d'inertie
+
+Pour visualiser la coupure de l'arbre en 4 classes, on utilise la fonction suivante :
+
+```{r}
+plot(data.hcpc, choice = "tree")
+```
+
+On distingue 4 groupes principaux :
+* Le premier groupe formé des races : DA.L, MAST, BULM, ST-B et T.NE
+* Un second formé des races : POIN, DOBE, BEAU, B.AL, E.FR, SETT, COLL, LEVR, FX.H, GBL.G
+* Un autre par les races : DAL, LABR, E.BR et BOXE
+* Puis le dernier par : BASS, CHIH, PEKI, TECK, BULD, CANI, COCK, FX.T
+
+Pour chaque classe determinée au dessus, on décide de les caractériser en fonction des modalités actives, c'est à dire en fonction de leur taille, poids, vélocité, intelligence, affection et aggressivité :
+
+```{r}
+data.hcpc$desc.var$test.chi2
+```
+
+p.value faible -> variable utile pour l'explication en 4 classes, dans notre cas Poids, Taille, Velocite, Fonction et Affection
+On retrouve ce test dans tout les analyses de construction d'un modèle
+
+```{r}
+data.hcpc$desc.var$category
+```
+test de proportion, générer la v.test et la p.value correspondante
+On analyse ce tableau de façon suivante :
+
+* Pour la première classe, on remarque que ce sont des races de chiens de grande taille et donc lourd, et qui dans les autres modalités sont plutôt moyen
+* La seconde quant à elle regroupe des chiens de grande taille, de poids moyen, avec une intelligence et une vélocité élevée
+* La troisième regroupe les races canines dont les modalités sont toutes moyennes
+* La dernière classe est caractérisée par les races de petites tailles et donc de poids faible, de vélocité faible également avec une faible aggresivité
+
+```{r}
+data.hcpc$desc.ind
+```
+
+On représente ensuite l’histogramme des pourcentages des modalités dans la classe et dans
+l’échantillon afin de donner une première tendance de la typologie de chaque classe :
+
+```{r}
+plot(data.hcpc, choice="bar")
+```
+
+La variance totale est l'inertie totale de notre tableau, on décompose cette variance en autant de proportion que de valeurs propres, soit 16 dans notre cas. le choix du nombre de classe fonctionne avec le critère du coude, il recherche la différence de descente la plus importante. Dans notre cas c'est 4 classes.
+
+On analyse ensuite les variables les plus significatives par classe grâce à 
+
+
+
+On représente graphiquement sur le plan factoriel 1 & 2, la projection :
+
+* Des 4 classes
+* Des 3 modalités de la variable `FONCTION`
+* De l'ensemble des races canines
+
+```{r}
+pl1 <- factoextra::fviz_cluster(data.hcpc, ellipse = FALSE)
+factoextra::fviz_add(pl1, data.mca$quali.sup$coord)
+```
+
+
