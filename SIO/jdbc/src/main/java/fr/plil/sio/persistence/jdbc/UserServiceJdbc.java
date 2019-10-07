@@ -21,8 +21,11 @@ public class UserServiceJdbc implements UserService {
 
     @Override
     public User create(String name, String groupName) {
-        if (name == null || groupName == null) {
-            throw new IllegalArgumentException("name or groupName cannot be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+        if (groupName == null) {
+            throw new IllegalArgumentException("groupName cannot be null");
         }
 
         // Group exist ?
@@ -86,8 +89,11 @@ public class UserServiceJdbc implements UserService {
 
     @Override
     public boolean isUserHasRight(String userName, Right right) {
-        if (userName == null || right == null) {
-            throw new IllegalArgumentException("userName or right cannot be null");
+        if (userName == null) {
+            throw new IllegalArgumentException("userName cannot be null");
+        }
+        if (right == null) {
+            throw new IllegalArgumentException("right cannot be null");
         }
 
         // User exist ?

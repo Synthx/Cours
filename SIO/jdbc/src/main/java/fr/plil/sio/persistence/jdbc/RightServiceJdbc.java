@@ -30,8 +30,14 @@ public class RightServiceJdbc implements RightService {
 
     @Override
     public Right create(String name, Right parent) {
-        if (name == null || parent == null || parent.getId() == null) {
-            throw new IllegalArgumentException("name or parent cannot be null");
+        if (name == null) {
+            throw new IllegalArgumentException("name cannot be null");
+        }
+        if (parent == null) {
+            throw new IllegalArgumentException("parent cannot be null");
+        }
+        if (parent.getId() == null) {
+            throw new IllegalArgumentException("parent id cannot be null");
         }
 
         Right databaseParentObject = this.rightRepository.findOne(parent.getId());
@@ -52,8 +58,11 @@ public class RightServiceJdbc implements RightService {
 
     @Override
     public boolean delete(Right right) {
-        if (right == null || right.getId() == null) {
+        if (right == null) {
             throw new IllegalArgumentException("right cannot be null");
+        }
+        if (right.getId() == null) {
+            throw new IllegalArgumentException("right id cannot be null");
         }
 
         Right databaseObject = this.findOne(right.getId());
@@ -99,12 +108,16 @@ public class RightServiceJdbc implements RightService {
     }
 
     @Override
-    public void updateGroup(Right right, Group group) {
-        this.rightRepository.updateGroup(right, group);
+    public void saveGroupRight(Group group) {
+        this.rightRepository.deleteGroupRightByGroupId(group.getId());
+
+        for (Right right : group.getRights()) {
+            this.rightRepository.saveGroupRight(group.getId(), right);
+        }
     }
 
     @Override
-    public void deleteGroup(Right right) {
-        this.rightRepository.deleteGroup(right);
+    public void deleteGroupRight(Long id) {
+        this.rightRepository.deleteGroupRightByGroupId(id);
     }
 }

@@ -1,0 +1,7 @@
+! Objectif;
+MAX = 20*A + 30*C + 47*D;
+
+! Contraintes;
+A + D <= 60;
+C <= 50;
+A + 2*C + 3*D <= 120;

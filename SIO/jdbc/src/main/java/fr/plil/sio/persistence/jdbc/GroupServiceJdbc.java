@@ -43,9 +43,10 @@ public class GroupServiceJdbc implements GroupService {
         // Group exist ?
         Group group = this.groupRepository.findByName(name);
 
-        // Delete group users too if group exist
+        // Delete group users and rights if group exist
         if (group != null) {
             this.userService.deleteByGroupId(group.getId());
+            this.rightService.deleteGroupRight(group.getId());
         }
 
         return this.groupRepository.delete(name) > 0;
@@ -69,8 +70,14 @@ public class GroupServiceJdbc implements GroupService {
 
     @Override
     public boolean addRight(String groupName, Right right) {
-        if (groupName == null || right == null || right.getId() == null) {
-            throw new IllegalArgumentException("groupName or right cannot be null");
+        if (groupName == null) {
+            throw new IllegalArgumentException("groupName cannot be null");
+        }
+        if (right == null) {
+            throw new IllegalArgumentException("right cannot be null");
+        }
+        if (right.getId() == null) {
+            throw new IllegalArgumentException("right id cannot be null");
         }
 
         // Group exist ?
@@ -94,7 +101,7 @@ public class GroupServiceJdbc implements GroupService {
         groupRights.add(right);
 
         // Save right to database
-        this.rightService.updateGroup(right, group);
+        this.rightService.saveGroupRight(group);
 
         return true;
     }
@@ -126,7 +133,7 @@ public class GroupServiceJdbc implements GroupService {
         group.setRights(groupRights.stream().filter(r -> !r.getId().equals(right.getId())).collect(Collectors.toList()));
 
         // Save right to database
-        this.rightService.deleteGroup(right);
+        this.rightService.saveGroupRight(group);
 
         return true;
     }
