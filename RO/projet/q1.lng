@@ -1,0 +1,9 @@
+! Fonction objectif;
+MAX = 4*Q1 + 6*Q2 + 7*Q3 + 8*Q4;
+
+! Contraintes;
+2*Q1 + 3*Q2 + 4*Q3 + 7*Q4 <= 4600;
+3*Q1 + 4*Q2 + 5*Q3 + 6*Q4 <= 5000;
+
+Q1 + Q2 + Q3 + Q4 = 950;
+Q4 >= 400;
