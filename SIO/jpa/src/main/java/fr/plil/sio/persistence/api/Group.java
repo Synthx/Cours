@@ -30,11 +30,7 @@ public class Group {
      * List of rights. The list CANNOT contains duplicate rights.
      */
     @ManyToMany
-    @JoinTable(
-            name = "GROUP_RIGHT_T",
-            joinColumns = @JoinColumn(name = "GROUP_ID"),
-            inverseJoinColumns = @JoinColumn(name = "RIGHT_ID")
-    )
+    @JoinTable(name = "GROUP_RIGHT_T")
     private List<Right> rights = new LinkedList<>();
 
     public List<Right> getRights() {

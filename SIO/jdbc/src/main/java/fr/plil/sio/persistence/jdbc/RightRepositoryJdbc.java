@@ -2,306 +2,138 @@ package fr.plil.sio.persistence.jdbc;
 
 import fr.plil.sio.persistence.api.Right;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
-import java.util.ArrayList;
 import java.util.List;
 
 @Repository
 public class RightRepositoryJdbc implements RightRepository {
 
     @Autowired
-    private DataSource dataSource;
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public List<Right> findByName(String name) {
-        List<Right> rights = new ArrayList<>();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "SELECT * FROM RIGHT_T WHERE NAME_C = :name";
 
-        try {
-            String request = "SELECT * FROM RIGHT_T WHERE NAME_C = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setString(1, name);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", name);
 
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                rights.add(this.buildObject(rs));
-            }
-
-            return rights;
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.query(request, params, new RightMapper());
     }
 
     @Override
     public Right findOne(Long id) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
         try {
-            String request = "SELECT * FROM RIGHT_T WHERE RIGHT_ID = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+            String request = "SELECT * FROM RIGHT_T WHERE RIGHT_ID = :id";
 
-            rs = stmt.executeQuery();
+            MapSqlParameterSource params = new MapSqlParameterSource();
+            params.addValue("id", id);
 
-            if (rs.next()) {
-                return this.buildObject(rs);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
+            return this.jdbcTemplate.queryForObject(request, params, new RightMapper());
+        } catch (EmptyResultDataAccessException exception) {
+            return null;
         }
     }
 
     @Override
     public int delete(Long id) {
-        PreparedStatement stmt = null;
+        String request = "DELETE FROM RIGHT_T WHERE RIGHT_ID = :id";
 
-        try {
-            String request = "DELETE FROM RIGHT_T WHERE RIGHT_ID = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("id", id);
 
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.update(request, params);
     }
 
     @Override
     public void save(Right right) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "INSERT INTO RIGHT_T (NAME_C) VALUES (:name)";
 
-        try {
-            String request = "INSERT INTO RIGHT_T (NAME_C) VALUES (?)";
-            stmt = this.dataSource.getConnection().prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, right.getName());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", right.getName());
 
-            int affectedRows = stmt.executeUpdate();
+        GeneratedKeyHolder holder = new GeneratedKeyHolder();
 
-            if (affectedRows == 1) {
-                rs = stmt.getGeneratedKeys();
-                if (rs.next()) {
-                    right.setId(rs.getLong(1));
-                }
-            } else {
-                throw new UnsupportedOperationException("default in key access");
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        this.jdbcTemplate.update(request, params, holder);
+
+        right.setId(holder.getKey().longValue());
     }
 
     @Override
     public void save(Right right, Right parent) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "INSERT INTO RIGHT_T (NAME_C, PARENT_ID) VALUES (:name, :parent)";
 
-        try {
-            String request = "INSERT INTO RIGHT_T (NAME_C, PARENT_ID) VALUES (?, ?)";
-            stmt = this.dataSource.getConnection().prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, right.getName());
-            stmt.setLong(2, parent.getId());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", right.getName());
+        params.addValue("parent", parent.getId());
 
-            int affectedRows = stmt.executeUpdate();
+        GeneratedKeyHolder holder = new GeneratedKeyHolder();
 
-            if (affectedRows == 1) {
-                rs = stmt.getGeneratedKeys();
-                if (rs.next()) {
-                    right.setId(rs.getLong(1));
-                }
-            } else {
-                throw new UnsupportedOperationException("default in key access");
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        this.jdbcTemplate.update(request, params, holder);
+
+        right.setId(holder.getKey().longValue());
     }
 
     @Override
     public void saveGroupRight(Long id, Right right) {
-        PreparedStatement stmt = null;
+        String request = "INSERT INTO GROUP_RIGHT_T VALUES (:right, :parent)";
 
-        try {
-            String request = "INSERT INTO GROUP_RIGHT_T VALUES (?, ?)";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
-            stmt.setLong(2, right.getId());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("right", id);
+        params.addValue("parent", right.getId());
 
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        this.jdbcTemplate.update(request, params);
     }
 
     @Override
     public void deleteGroupRightByGroupId(Long id) {
-        PreparedStatement stmt = null;
+        String request = "DELETE FROM GROUP_RIGHT_T WHERE GROUP_ID = :group";
 
-        try {
-            String request = "DELETE FROM GROUP_RIGHT_T WHERE GROUP_ID = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("group", id);
 
-            stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        this.jdbcTemplate.update(request, params);
     }
 
     @Override
     public List<Right> findByParentId(Long id) {
-        List<Right> rights = new ArrayList<>();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "SELECT * FROM RIGHT_T WHERE PARENT_ID = :parent";
 
-        try {
-            String request = "SELECT * FROM RIGHT_T WHERE PARENT_ID = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("parent", id);
 
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                rights.add(this.buildObject(rs));
-            }
-
-            return rights;
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.query(request, params, new RightMapper());
     }
 
     @Override
     public List<Right> findByGroupId(Long id) {
-        List<Right> rights = new ArrayList<>();
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "SELECT r.RIGHT_ID, r.NAME_C FROM GROUP_RIGHT_T g JOIN RIGHT_T r ON r.RIGHT_ID = g.RIGHT_ID " +
+                "WHERE g.GROUP_ID = :group";
 
-        try {
-            String request = "SELECT r.RIGHT_ID, r.NAME_C FROM GROUP_RIGHT_T g JOIN RIGHT_T r ON r.RIGHT_ID = g.RIGHT_ID " +
-                    "WHERE g.GROUP_ID = ? ";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("group", id);
 
-            rs = stmt.executeQuery();
-
-            while (rs.next()) {
-                rights.add(this.buildObject(rs));
-            }
-
-            return rights;
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.query(request, params, new RightMapper());
     }
 
-    private Right buildObject(ResultSet rs) throws SQLException {
-        Right right = new Right();
-        right.setId(rs.getLong("RIGHT_ID"));
-        right.setName(rs.getString("NAME_C"));
+    private static final class RightMapper implements RowMapper<Right> {
 
-        return right;
+        @Override
+        public Right mapRow(ResultSet resultSet, int i) throws SQLException {
+            Right right = new Right();
+
+            right.setId(resultSet.getLong("RIGHT_ID"));
+            right.setName(resultSet.getString("NAME_C"));
+
+            return right;
+        }
     }
 }

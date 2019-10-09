@@ -3,144 +3,86 @@ package fr.plil.sio.persistence.jdbc;
 import fr.plil.sio.persistence.api.Group;
 import fr.plil.sio.persistence.api.User;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 @Repository
 public class UserRepositoryJdbc implements UserRepository {
 
     @Autowired
-    private DataSource dataSource;
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public void save(User user) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "INSERT INTO USER_T (NAME_C, GROUP_ID) VALUES (:name, :group)";
 
-        try {
-            String request = "INSERT INTO USER_T (NAME_C, GROUP_ID) VALUES (?, ?)";
-            stmt = dataSource.getConnection().prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, user.getName());
-            stmt.setLong(2, user.getGroup().getId());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", user.getName());
+        params.addValue("group", user.getGroup().getId());
 
-            stmt.executeUpdate();
+        GeneratedKeyHolder holder = new GeneratedKeyHolder();
 
-            rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                user.setId(rs.getLong(1));
-            } else {
-                throw new UnsupportedOperationException("default in key access");
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        this.jdbcTemplate.update(request, params, holder);
+
+        user.setId(holder.getKey().longValue());
     }
 
     @Override
     public User findByName(String name) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
         try {
-            String request = "SELECT * FROM USER_T WHERE NAME_C = ?";
-            stmt = dataSource.getConnection().prepareStatement(request);
-            stmt.setString(1, name);
+            String request = "SELECT * FROM USER_T WHERE NAME_C = :name";
 
-            rs = stmt.executeQuery();
+            MapSqlParameterSource params = new MapSqlParameterSource();
+            params.addValue("name", name);
 
-            if (rs.next()) {
-                return this.buildObject(rs);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
+            return this.jdbcTemplate.queryForObject(request, params, new UserMapper());
+        } catch (EmptyResultDataAccessException exception) {
+            return null;
         }
     }
 
     @Override
     public int delete(String name) {
-        PreparedStatement stmt = null;
+        String request = "DELETE FROM USER_T WHERE NAME_C = :name";
 
-        try {
-            String request = "DELETE FROM USER_T WHERE NAME_C = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setString(1, name);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", name);
 
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.update(request, params);
     }
 
     @Override
     public int deleteByGroupId(Long id) {
-        PreparedStatement stmt = null;
+        String request = "DELETE FROM USER_T WHERE GROUP_ID = :group";
 
-        try {
-            String request = "DELETE FROM USER_T WHERE GROUP_ID = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("group", id);
 
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.update(request, params);
     }
 
-    private User buildObject(ResultSet rs) throws SQLException {
-        User user = new User();
-        user.setId(rs.getLong("USER_ID"));
-        user.setName(rs.getString("NAME_C"));
+    private static final class UserMapper implements RowMapper<User> {
 
-        Group group = new Group();
-        group.setId(rs.getLong("GROUP_ID"));
+        @Override
+        public User mapRow(ResultSet resultSet, int i) throws SQLException {
+            User user = new User();
 
-        user.setGroup(group);
+            user.setId(resultSet.getLong("USER_ID"));
+            user.setName(resultSet.getString("NAME_C"));
 
-        return user;
+            Group group = new Group();
+            group.setId(resultSet.getLong("GROUP_ID"));
+
+            user.setGroup(group);
+
+            return user;
+        }
     }
 }

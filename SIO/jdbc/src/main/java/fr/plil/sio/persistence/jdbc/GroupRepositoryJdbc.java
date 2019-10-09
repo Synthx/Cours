@@ -1,150 +1,85 @@
 package fr.plil.sio.persistence.jdbc;
 
 import fr.plil.sio.persistence.api.Group;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.EmptyResultDataAccessException;
+import org.springframework.jdbc.core.RowMapper;
+import org.springframework.jdbc.core.namedparam.MapSqlParameterSource;
+import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
+import org.springframework.jdbc.support.GeneratedKeyHolder;
 import org.springframework.stereotype.Repository;
 
-import javax.sql.DataSource;
-import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
-import java.sql.Statement;
 
 @Repository
 public class GroupRepositoryJdbc implements GroupRepository {
 
     @Autowired
-    private DataSource dataSource;
+    private NamedParameterJdbcTemplate jdbcTemplate;
 
     @Override
     public Group findByName(String name) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
         try {
-            String request = "SELECT * FROM GROUP_T WHERE NAME_C = ?";
-            stmt = dataSource.getConnection().prepareStatement(request);
-            stmt.setString(1, name);
+            String request = "SELECT * FROM GROUP_T WHERE NAME_C = :name";
 
-            rs = stmt.executeQuery();
+            MapSqlParameterSource params = new MapSqlParameterSource();
+            params.addValue("name", name);
 
-            if (rs.next()) {
-                return this.buildObject(rs);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
+            return this.jdbcTemplate.queryForObject(request, params, new GroupMapper());
+        } catch (EmptyResultDataAccessException exception) {
+            return null;
         }
     }
 
     @Override
     public Group findById(Long id) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
-
         try {
-            String request = "SELECT * FROM GROUP_T WHERE GROUP_ID = ?";
-            stmt = dataSource.getConnection().prepareStatement(request);
-            stmt.setLong(1, id);
+            String request = "SELECT * FROM GROUP_T WHERE GROUP_ID = :id";
 
-            rs = stmt.executeQuery();
+            MapSqlParameterSource params = new MapSqlParameterSource();
+            params.addValue("id", id);
 
-            if (rs.next()) {
-                return this.buildObject(rs);
-            } else {
-                return null;
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
+            return this.jdbcTemplate.queryForObject(request, params, new GroupMapper());
+        } catch (EmptyResultDataAccessException exception) {
+            return null;
         }
     }
 
     @Override
     public void save(Group group) {
-        PreparedStatement stmt = null;
-        ResultSet rs = null;
+        String request = "INSERT INTO GROUP_T (NAME_C) VALUES (:name)";
 
-        try {
-            String request = "INSERT INTO GROUP_T (NAME_C) VALUES (?)";
-            stmt = dataSource.getConnection().prepareStatement(request, Statement.RETURN_GENERATED_KEYS);
-            stmt.setString(1, group.getName());
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", group.getName());
 
-            stmt.executeUpdate();
-            rs = stmt.getGeneratedKeys();
-            if (rs.next()) {
-                group.setId(rs.getLong(1));
-            } else {
-                throw new UnsupportedOperationException("default in key access");
-            }
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (rs != null) {
-                    rs.close();
-                }
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        GeneratedKeyHolder holder = new GeneratedKeyHolder();
+
+        this.jdbcTemplate.update(request, params, holder);
+
+        group.setId(holder.getKey().longValue());
     }
 
     @Override
     public int delete(String name) {
-        PreparedStatement stmt = null;
+        String request = "DELETE FROM GROUP_T WHERE NAME_C = :name";
 
-        try {
-            String request = "DELETE FROM GROUP_T WHERE NAME_C = ?";
-            stmt = this.dataSource.getConnection().prepareStatement(request);
-            stmt.setString(1, name);
+        MapSqlParameterSource params = new MapSqlParameterSource();
+        params.addValue("name", name);
 
-            return stmt.executeUpdate();
-        } catch (SQLException e) {
-            throw new UnsupportedOperationException("sql exception", e);
-        } finally {
-            try {
-                if (stmt != null) {
-                    stmt.close();
-                }
-            } catch (SQLException e) {
-                throw new UnsupportedOperationException("sql exception during close", e);
-            }
-        }
+        return this.jdbcTemplate.update(request, params);
     }
 
-    private Group buildObject(ResultSet rs) throws SQLException {
-        Group group = new Group();
-        group.setId(rs.getLong("GROUP_ID"));
-        group.setName(rs.getString("NAME_C"));
+    private static final class GroupMapper implements RowMapper<Group> {
 
-        return group;
+        @Override
+        public Group mapRow(ResultSet resultSet, int i) throws SQLException {
+            Group group = new Group();
+
+            group.setId(resultSet.getLong("GROUP_ID"));
+            group.setName(resultSet.getString("NAME_C"));
+
+            return group;
+        }
     }
 }
