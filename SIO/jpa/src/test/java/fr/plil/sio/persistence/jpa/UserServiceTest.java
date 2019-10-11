@@ -98,9 +98,34 @@ public class UserServiceTest {
     }
 
     @Test
-    public void testIsUserHasRightByParents() {
+    public void testIsUserHasRightByParent() {
         Right right = rightService.findByName("sibling").get(0);
-        assertTrue(userService.isUserHasRight("user", right));
+        assertFalse(userService.isUserHasRight("user",right));
+    }
+
+    @Test
+    public void testIsUserHasNotRightMorComplex() {
+        Right right1 = rightService.create("r1");
+        Right right2 = rightService.create("r2");
+        Right right3 = rightService.create("r3");
+        Right right4 = rightService.create("r4");
+        Right right5 = rightService.create("r5", right2);
+        Right right6 = rightService.create("r6", right5);
+        Right right7 = rightService.create("r7", right3);
+        Right right8 = rightService.create("r8", right7);
+        Right right9 = rightService.create("r9", right4);
+        groupService.addRight("group", right5);
+        groupService.addRight("group", right8);
+        groupService.addRight("group", right4);
+        assertFalse(userService.isUserHasRight("user", right1));
+        assertTrue(userService.isUserHasRight("user", right2));
+        assertTrue(userService.isUserHasRight("user", right3));
+        assertTrue(userService.isUserHasRight("user", right4));
+        assertTrue(userService.isUserHasRight("user", right5));
+        assertFalse(userService.isUserHasRight("user", right6));
+        assertTrue(userService.isUserHasRight("user", right7));
+        assertTrue(userService.isUserHasRight("user", right8));
+        assertFalse(userService.isUserHasRight("user", right9));
     }
 
     @Test

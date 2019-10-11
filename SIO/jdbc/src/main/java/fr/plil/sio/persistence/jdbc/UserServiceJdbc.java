@@ -111,8 +111,18 @@ public class UserServiceJdbc implements UserService {
         // Get group rights
         List<Right> groupRights = this.rightService.findByGroupId(user.getGroup().getId());
 
-        return groupRights.stream().map(Right::getId).map(rightService::findOne).anyMatch(r -> {
-            return r.getId().equals(right1.getId()) || r.getSiblings().stream().map(Right::getId).anyMatch(right1.getId()::equals);
-        });
+        return groupRights.stream().map(Right::getId).map(rightService::findOne).anyMatch(r -> isRightIsEqual(r, right));
+    }
+
+    private boolean isRightIsEqual(Right currentRight, Right right) {
+        if (currentRight == null) {
+            return false;
+        }
+
+        if (currentRight.getId().equals(right.getId())) {
+            return true;
+        }
+
+        return this.isRightIsEqual(currentRight.getParent(), right);
     }
 }

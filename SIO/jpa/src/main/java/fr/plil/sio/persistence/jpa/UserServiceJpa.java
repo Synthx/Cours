@@ -88,11 +88,21 @@ public class UserServiceJpa implements UserService {
 
         Group group = this.groupService.findByName(user.getGroup().getName());
         if (group != null) {
-            return group.getRights().stream().map(Right::getId).map(rightService::findOne).anyMatch(r -> {
-                return r.getId().equals(right1.getId()) || r.getSiblings().stream().map(Right::getId).anyMatch(right1.getId()::equals);
-            });
+            return group.getRights().stream().map(Right::getId).map(rightService::findOne).anyMatch(r -> isRightIsEqual(r, right));
         }
 
         return false;
+    }
+
+    private boolean isRightIsEqual(Right currentRight, Right right) {
+        if (currentRight == null) {
+            return false;
+        }
+
+        if (currentRight.getId().equals(right.getId())) {
+            return true;
+        }
+
+        return this.isRightIsEqual(currentRight.getParent(), right);
     }
 }
