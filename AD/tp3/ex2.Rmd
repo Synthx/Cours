@@ -292,30 +292,52 @@ On retrouve ce test dans tout les analyses de construction d'un modèle
 ```{r}
 data.hcpc$desc.var$category
 ```
-test de proportion, générer la v.test et la p.value correspondante
 On analyse ce tableau de façon suivante :
 
-* Pour la première classe, on remarque que ce sont des races de chiens de grande taille et donc lourd, et qui dans les autres modalités sont plutôt moyen
-* La seconde quant à elle regroupe des chiens de grande taille, de poids moyen, avec une intelligence et une vélocité élevée
-* La troisième regroupe les races canines dont les modalités sont toutes moyennes
-* La dernière classe est caractérisée par les races de petites tailles et donc de poids faible, de vélocité faible également avec une faible aggresivité
-
-```{r}
-data.hcpc$desc.ind
-```
+* Pour la première classe, on remarque que ce sont des races de chiens de grande taille et lourd (100% sont representés), et qui dans les autres modalités sont plutôt moyen, ce sont des chiens qui ne sont pas rapide et ne sont pas affectueux
+* La seconde quant à elle regroupe des chiens de grande taille, de poids moyen (proportion de la classe supérieure à la proportion totale), mais possédant une intelligence et une vélocité élevée, concernant l'affection, on ne peut pas retenir cette modalité car la proportion par rapport à la classe est quasiment égale à la proportion totale de cette modalité
+* La troisième regroupe les races canines dont les modalités sont toutes moyennes dans l'ensemble (surtout pour la taille, la vitesse, l'affection et le poids)
+* La dernière classe est caractérisée par les races de petites tailles et donc de poids faible (100% des individus de cette classe ont ces modalités), de vélocité faible et plutôt affectif, les autres modalités ne peuvent être retenus à cause de la p.value qui est trop élévée (> à 5%)
 
 On représente ensuite l’histogramme des pourcentages des modalités dans la classe et dans
 l’échantillon afin de donner une première tendance de la typologie de chaque classe :
 
+### Dimension 1
+
 ```{r}
-plot(data.hcpc, choice="bar")
+barplot(data.hcpc$desc.var$category$`1`[,1])
+```
+
+### Dimension 2
+
+```{r}
+barplot(data.hcpc$desc.var$category$`2`[,1])
+```
+
+### Dimension 3
+
+```{r}
+barplot(data.hcpc$desc.var$category$`3`[,1])
+```
+
+### Dimension 4
+
+```{r}
+barplot(data.hcpc$desc.var$category$`4`[,1])
 ```
 
 La variance totale est l'inertie totale de notre tableau, on décompose cette variance en autant de proportion que de valeurs propres, soit 16 dans notre cas. le choix du nombre de classe fonctionne avec le critère du coude, il recherche la différence de descente la plus importante. Dans notre cas c'est 4 classes.
 
 On analyse ensuite les variables les plus significatives par classe grâce à 
 
+On récupère ensuite les races canines les plus proches du centre de gravité grâce à :
 
+```{r}
+data.hcpc$desc.ind
+```
+Pour chaque groupe, on obtient :
+
+ * Pour le groupe 1, ce sont les races canines BULM, ST-B, MAST
 
 On représente graphiquement sur le plan factoriel 1 & 2, la projection :
 
