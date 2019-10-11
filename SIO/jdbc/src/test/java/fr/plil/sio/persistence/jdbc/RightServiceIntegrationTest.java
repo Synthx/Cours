@@ -12,7 +12,7 @@ import static org.junit.Assert.*;
 
 @RunWith(SpringJUnit4ClassRunner.class)
 @SpringBootTest
-public class RightServiceTest extends AbstractServiceSupport {
+public class RightServiceIntegrationTest extends AbstractServiceSupport {
 
     @Autowired
     private RightService rightService;
