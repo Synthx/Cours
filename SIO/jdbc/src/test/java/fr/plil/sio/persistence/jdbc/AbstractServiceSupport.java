@@ -32,7 +32,7 @@ public abstract class AbstractServiceSupport {
     }
 
     @After
-    public void cleanupDatabase() throws SQLException {
+    public void cleanupDatabase() {
         List<String> requests = new ArrayList<>();
         requests.add("DROP TABLE GROUP_T");
         requests.add("DROP TABLE RIGHT_T");

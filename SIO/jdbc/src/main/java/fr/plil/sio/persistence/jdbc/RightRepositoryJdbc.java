@@ -115,7 +115,7 @@ public class RightRepositoryJdbc implements RightRepository {
 
     @Override
     public List<Right> findByGroupId(Long id) {
-        String request = "SELECT r.RIGHT_ID, r.NAME_C FROM GROUP_RIGHT_T g JOIN RIGHT_T r ON r.RIGHT_ID = g.RIGHT_ID " +
+        String request = "SELECT r.RIGHT_ID, r.NAME_C, r.PARENT_ID FROM GROUP_RIGHT_T g JOIN RIGHT_T r ON r.RIGHT_ID = g.RIGHT_ID " +
                 "WHERE g.GROUP_ID = :group";
 
         MapSqlParameterSource params = new MapSqlParameterSource();
@@ -129,9 +129,13 @@ public class RightRepositoryJdbc implements RightRepository {
         @Override
         public Right mapRow(ResultSet resultSet, int i) throws SQLException {
             Right right = new Right();
-
             right.setId(resultSet.getLong("RIGHT_ID"));
             right.setName(resultSet.getString("NAME_C"));
+
+            Right parent = new Right();
+            parent.setId(resultSet.getLong("PARENT_ID"));
+
+            right.setParent(parent);
 
             return right;
         }

@@ -123,6 +123,11 @@ public class UserServiceJdbc implements UserService {
             return true;
         }
 
-        return this.isRightIsEqual(currentRight.getParent(), right);
+        Right parent = null;
+        if (currentRight.getParent() != null) {
+            parent = this.rightService.findOne(currentRight.getParent().getId());
+        }
+
+        return this.isRightIsEqual(parent, right);
     }
 }
