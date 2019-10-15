@@ -1,10 +1,13 @@
 ---
 title: "Niveau scolaire d'une classe de 6e"
-author: "Taniel Rémi"
+author: "Taniel Rémi - GIS2A4"
 date: "16/09/2019"
 output:
-  pdf_document: default
+  pdf_document:
+    toc: true
 ---
+
+\newpage
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
@@ -37,7 +40,7 @@ Nos données sont sauvegardées au format CSV dans le fichiers notes, nous comme
 data <- read.table("/home/remi/Documents/Cours/AD/data/notes.csv", sep = ";", dec = ",", header = TRUE)
 ```
 
-On visualise les types de nos données et la forme de celles-ci grâce à la fonction `str` appliquée à notre variable :
+On visualise ensuite les types de nos données et la forme de celles-ci grâce à la fonction `str` appliquée à notre variable `data` :
 
 ```{r}
 str(data)
@@ -45,22 +48,23 @@ str(data)
 
 Notre jeu de données contient 27 observations, représentant nos 27 élèves, pour 15 variables, représentant les matières. On remarque qu'à part la première colonne qui est le numéro de l'élève, toutes les autres variables sont quantitatives, et représentent la moyenne dans chaque matière pour un élève donné.
 
-On décide de reformater les données pour supprimer la variable `eleves` et donner des identifiants de lignes à nos données, dans notre cas on prendra le numéro de l'élèves en question :
-
-```{r}
-rownames(data) <- data$eleves
-data <- data[,-1]
-```
-
-Notre jeu de données devient alors :
+On se décide alors de visualiser les 6 premières lignes de nos données avec la fonction `head` ;
 
 ```{r}
 head(data)
 ```
 
+On remarque que nous devons enlever la colonne `eleves` avant de lancer les calculs et faire notre analyse, on décide donc de formater nos données afin de donner un identifiant aux différentes lignes de nos données, dans notre cas, ce sera la variable `eleves` :
+
+```{r}
+rownames(data) <- data$eleves
+data <- data[,-1]
+head(data)
+```
+
 # Partie 2 : Mise en oeuvre de l'ACP
 
-Pour réaliser l'ACP et les prochaines questions, nous allons avoir besoin des librairies suivantes :
+Pour réaliser l'ACP, nous allons avoir besoin des packages suivants :
 
 ```{r}
 library(FactoMineR)
@@ -73,35 +77,17 @@ Puis on range les résultats de l'ACP (valeurs propres, coordonnées, contributi
 data.pca <- FactoMineR::PCA(data, scale.unit = TRUE, ncp = 6, graph = FALSE)
 ```
 
-Les valeurs propres des différentes dimensions sont stockés dans la variable :
+Les résultats seront alors stockés dans les variables suivantes :
 
-```{r}
-data.pca$eig
-```
-
-On remarque que la somme des valeurs propres est égale aux nombre de variables soit 14 dans notre cas :
-
-```{r}
-sum(data.pca$eig[,1])
-```
-
-Les contributions, cos2 et coordonnées en fonction des dimensions sont stockés pour les variables dans la variable :
-
-```{r}
-data.pca$var
-```
-
-Et pour les individus, on retrouvera ces informations dans la variable :
-
-```{r}
-data.pca$ind
-```
+* `$eig` pour les informations par rapport aux valeurs propres relatives à chaque dimension
+* `$var` pour les résultats concernant les différentes variables, pour notre jeu de données, les différentes matières
+* `$ind` pour les informations par rapport aux différents individus, élèves dans notre cas
 
 # Partie 3 : Analyse des résultats
 
 ## Question 2 : Tableau des statistiques sommaires
 
-La tableau des statistiques sommaires est obtenu par la fonction :
+La tableau des statistiques sommaires est obtenu par la fonction `summary` :
 
 ```{r}
 summary(data)
@@ -136,25 +122,21 @@ Tout comme l'EPS qui n'a aucun rapport avec des matières comme l'anglais ou l'e
 
 ## Question 4 : Nombre de composantes principales à retenir
 
-Pour rappel, on obtient les valeurs propres des dimensions grâce à la variable :
+Pour rappel, on obtient les valeurs propres des dimensions grâce à la variable suivante :
 
 ```{r}
 data.pca$eig
 ```
 
-Il y a 3 critères pour déterminer le nombre d'axes à retenir pour notre analyse, ce sont :
+Pour connaître le nombre d'axe que nous devons retenir, nous pouvons utiliser ces 3 critères :
 
-* La part d'inertie cumulée supérieure à 80%
-* La comparaison avec la moyenne
-* La règle du coude (également appellée règle de Kaiser)
+* Part d'inertie supérieure à la moyenne
+* Part d'inertie cumulée supérieure à 80%
+* Critère du coude
 
 Nous allons pour chacun de ces critères, déterminer le nombre de composantes principales à retenir.
 
-### Part d'inertie cumulée
-
-Pour ce critère, nous devons additionner les valeurs propres des axes jusqu'à obtenir un pourcentage cumulé supérieur à 80%, grâce au tableau ci-dessus, nous pouvons retenir les 6 premières composantes qui à elles seules réprésentent un peu plus 84% de l'information totale.
-
-### Comparaison avec la moyenne
+### Part d'inertie supérieure à la moyenne
 
 Pour utiliser ce critère, on commence par calculer la moyenne des pourcentages des valeurs propres, obtenu grâce à :
 
@@ -162,11 +144,15 @@ Pour utiliser ce critère, on commence par calculer la moyenne des pourcentages 
 mean(data.pca$eig[,2])
 ```
 
-Puis nous retenons les composantes principales dont le pourcentage d'inertie est supérieur à cette moyenne, dans notre cas, nous pouvons retenir les 5 premières composantes principales en utilisant ce critère.
+Puis nous retenons les composantes principales dont le pourcentage d'inertie expliqué est supérieur à cette moyenne, dans notre cas, nous pouvons retenir les 5 premières composantes principales en utilisant ce critère.
+
+### Part d'inertie cumulée supérieure à 80%
+
+Pour ce critère, nous devons additionner les valeurs propres des dimensions jusqu'à obtenir un pourcentage cumulé supérieur à 80%, grâce au tableau précédent, nous pouvons retenir les 6 premières composantes qui à elles seules réprésentent un peu plus 84% de l'information totale.
 
 ### Critère de coude
 
-Pour utiliser ce critère, nous devons d'abord tracer le graphique suivant :
+Afin d'utiliser ce critère, nous devons dans un premier temps, tracer le graphique suivant :
 
 ```{r}
 barplot(data.pca$eig[,2])
@@ -174,27 +160,23 @@ barplot(data.pca$eig[,2])
 
 On recherche l'apparition d'un coude, sur notre graphique, le coude apparaît entre le 3e et 4e dimension, donc selon ce critère nous pouvons retenir 3 composantes principales.
 
-### Conclusion
+### Conclusion sur le nombre d'axe à retenir
 
-Nous décidons de retenir 5 composantes principales pour notre analyse.
+Selon les critères, précédents, nous décidons de retenir 5 composantes principales pour notre analyse.
 
 ## Question 5 : Interprétation des 3 premiers axes par rapport aux disciplines
 
-On recupère les données (contribution, qualité de représentation et coordonnées) des disciplines sur les différentes dimensions grâce à la variable :
+On recupère les données (contribution, qualité de représentation et coordonnées) des disciplines sur les différentes dimensions grâce à la variable suivante :
 
 ```{r}
 data.pca$var
 ```
 
-Pour chacune des 3 premières dimensions, nous allons retenir les disciplines ayant une contribution supérieure à la moyenne, et nous allons noté :
-
-* La valeur de sa contribution
-* La valeur de sa qualité de représentation selon cet axe
-* Le signe
+Pour chacune des 5 dimensions, nous allons retenir les variables dont la contribution est supérieure à la moyenne (soit 6.25), puis pour chacune des variables retenues, nous allons noter la qualité de leur répresentation sous cet axe, ainsi que le signe de sa projection.
 
 ### Dim 1. (34,11%)
 
-| Disciplines | Contribution | Qualité | Signe |
+| Discipline | Contribution | Qualité | Signe |
 | ------ | ------ | ----- | ----- |
 | EXPR | 16.00 | 0.76 | + |
 | MATH | 11.26 | 0.53 | + |
