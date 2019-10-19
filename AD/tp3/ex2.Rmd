@@ -400,9 +400,9 @@ PLutôt des chiens de compagnies
 * Un troisième regroupant les races canines de grande taille et de poids important mais peu affectif, tel que MAST, DA.L ou ST-B
 * Puis un dernier groupe avec des races comme LEVR, DOBE ou BEAU, qui sont des races rapides, intelligentes et de poids moyen
 
-# 3e partie : Clasification ascendate hiérarchique sur les axes retenus
+# Partie 3 : Clasification ascendate hiérarchique sur les axes retenus
 
-Pour rappel, nous avons retenus les 4 premiers axes factoriels qui représentent 75% de l'information totale. Notre classification se portera donc seulement sur ces axes.
+Pour rappel, nous avons retenus les 5 premiers axes factoriels qui représentent 84% de l'information totale. Notre classification se portera donc seulement sur ces axes.
 
 ## Réalisation sous R
 
@@ -415,7 +415,7 @@ library(philentropy)
 library(factoextra)
 ```
 
-On stocke ensuite les résultats du CAH dans la variable `data.hcpc` et on décide de ne pas afficher les graphiques tout de suite :
+On stocke ensuite les résultats de la CAH dans la variable `data.hcpc` et on décide de ne pas afficher les graphiques lors de l'appel à la fonction :
 
 ```{r}
 data.hcpc <- FactoMineR::HCPC(data.mca, nb.clust = 4, proba = 1, graph = FALSE)
@@ -423,9 +423,17 @@ data.hcpc <- FactoMineR::HCPC(data.mca, nb.clust = 4, proba = 1, graph = FALSE)
 
 ## Interprétation et analyse des résultats
 
-### Typologie en 4 classes
+### Interprétation du graphique de gain d'inertie
 
-Classification de départ, chaque individu = 1 groupe, tout ceux qui s'accroche avant sont des éléments qui se ressemblent, ont des proximités, mesure le degré de regroupement des branches (indice d'inertie), la somme est égale à l'inertie totale et nous permet de mesurer le niveau d'aggrégation des branches, plus l'indice est élevé plus les branches sont distinctes et inversement, le nombre de classe dépends du niveau de coupure de notre indice d'inertie
+Avant d'interpréter les résultats de la classification, on décider d'afficher le graphique de gain d'inertie par le nombre de classe retenu, obtenu par le code :
+
+```{r}
+plot(data.hcpc, choice = "bar")
+```
+
+On remarque que nous avons choisi le bon nombre de classes pour la classification, en effet, le coude apparaît à la 3e barre, donc il faut choisir de faire une classification en 4 classes
+
+### Typologie en 4 classes
 
 Pour visualiser la coupure de l'arbre en 4 classes, on utilise la fonction suivante :
 
@@ -452,17 +460,47 @@ On remarque que les races canines seront divisés en classe principalement par r
 
 ### Caractérisation des 4 classes en fonction des différentes modalités
 
-Pour chaque classe determinée au dessus, on décide de les caractériser en fonction des modalités actives, c'est à dire en fonction de leur taille, poids, vélocité, intelligence, affection et aggressivité :
+Pour chaque classe determinée au dessus, on décide de les caractériser en fonction des modalités actives, c'est à dire en fonction de leur taille, poids, vélocité, intelligence, affection et aggressivité.
+
+#### Classe 1
+
+Pour la classe 1, les données sont obtenus par :
 
 ```{r}
-data.hcpc$desc.var$category
+data.hcpc$desc.var$category$'1'
 ```
-On analyse ce tableau de façon suivante :
 
-* Pour la première classe, on remarque que ce sont des races de chiens de grande taille et lourd (100% sont representés), et qui dans les autres modalités sont plutôt moyen, ce sont des chiens qui ne sont pas rapide et ne sont pas affectueux
-* La seconde quant à elle regroupe des chiens de grande taille, de poids moyen (proportion de la classe supérieure à la proportion totale), mais possédant une intelligence et une vélocité élevée, concernant l'affection, on ne peut pas retenir cette modalité car la proportion par rapport à la classe est quasiment égale à la proportion totale de cette modalité
-* La troisième regroupe les races canines dont les modalités sont toutes moyennes dans l'ensemble (surtout pour la taille, la vitesse, l'affection et le poids)
-* La dernière classe est caractérisée par les races de petites tailles et donc de poids faible (100% des individus de cette classe ont ces modalités), de vélocité faible et plutôt affectif, les autres modalités ne peuvent être retenus à cause de la p.value qui est trop élévée (> à 5%)
+our la première classe, on remarque que ce sont des races de chiens de grande taille et lourd (100% sont representés), et qui dans les autres modalités sont plutôt moyen, ce sont des chiens qui ne sont pas rapide et ne sont pas affectueux.
+
+#### Classe 2
+
+Pour la seconde classe, les données sont obtenus grâce au code suivant :
+
+```{r}
+data.hcpc$desc.var$category$'2'
+```
+
+La seconde quant à elle regroupe des chiens de grande taille, de poids moyen (proportion de la classe supérieure à la proportion totale), mais possédant une intelligence et une vélocité élevée, concernant l'affection, on ne peut pas retenir cette modalité car la proportion par rapport à la classe est quasiment égale à la proportion totale de cette modalité
+
+#### Classe 3
+
+Pour la classe 3, les données sont obtenus par la variable :
+
+```{r}
+data.hcpc$desc.var$category$'3'
+```
+
+La troisième classe regroupe les races canines dont les modalités sont toutes moyennes dans l'ensemble (surtout pour la taille, la vitesse, l'affection et le poids)
+
+#### Classe 4
+
+Pour la dernière classe, les données sont obtenus grâce à :
+
+```{r}
+data.hcpc$desc.var$category$'4'
+```
+
+La dernière classe est caractérisée par les races de petites tailles et donc de poids faible (100% des individus de cette classe ont ces modalités), de vélocité faible et plutôt affectif, les autres modalités ne peuvent être retenus à cause de la p.value qui est trop élévée (> à 5%)
 
 On représente ensuite l’histogramme des pourcentages des modalités dans la classe et dans
 l’échantillon afin de donner une première tendance de la typologie de chaque classe :
@@ -491,19 +529,7 @@ barplot(data.hcpc$desc.var$category$`3`[,1])
 barplot(data.hcpc$desc.var$category$`4`[,1])
 ```
 
-La variance totale est l'inertie totale de notre tableau, on décompose cette variance en autant de proportion que de valeurs propres, soit 16 dans notre cas. le choix du nombre de classe fonctionne avec le critère du coude, il recherche la différence de descente la plus importante. Dans notre cas c'est 4 classes.
-
-On analyse ensuite les variables les plus significatives par classe grâce à 
-
-On récupère ensuite les races canines les plus proches du centre de gravité grâce à :
-
-```{r}
-data.hcpc$desc.ind
-```
-Pour chaque groupe, on obtient :
-
-* Pour la classe 1, ce sont les races canines BULM, ST-B, MAST
-* Pour la classe 3, toutes les races canines sont proches du centre de gravité de la classe
+### Analyse du plan factoriel
 
 On représente graphiquement sur le plan factoriel 1 & 2, la projection :
 
@@ -511,9 +537,20 @@ On représente graphiquement sur le plan factoriel 1 & 2, la projection :
 * Des 3 modalités de la variable `FONCTION`
 * De l'ensemble des races canines
 
+Pour cela, on utilise le code suivant :
+
 ```{r}
 pl1 <- factoextra::fviz_cluster(data.hcpc, ellipse = FALSE)
 factoextra::fviz_add(pl1, data.mca$quali.sup$coord)
 ```
 
+On remarque qu'à part le groupe 3, tout les autres groupes sont caractérisés par une modalité de la variable Fonction :
 
+* X pour le groupe 1, qui regroupe des chiens de grande taille et lourd
+* X pour le groupe 2, ce groupe regroupe les races canines de grande taille et de poids moyens, mais qui possède une velocité élevée
+* Enfinx X pour le groupe 4, ce groupe est formé de chiens de petite taille et de poids faible, qui ne sont pas très rapide mais plutôt affectueux.
+
+A l'aide du graphique précédent, on décide de noter les races canines les plus proches du centre de gravité de chaque classe, on obtient les résultats suivants :
+
+* Pour la classe 1, ce sont les races canines BULM, ST-B, MAST
+* Pour la classe 3, toutes les races canines sont proches du centre de gravité de la classe
