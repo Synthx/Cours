@@ -10,6 +10,8 @@ yygrammar.*
 *.zip
 *target*
 *.lst
+.DS_STORE
+__pycache__
 
 # Fichier compilé
 R/tp2/tp2_files/*
