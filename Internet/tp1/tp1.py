@@ -14,20 +14,19 @@ def add_to_result(result, key, value):
 	else:
 		result[key] += float(value)
 
-def calculate_sell_by_platform(file_name):
+def calculate_sell_by_platform(lines):
 	result = {}
-	# open csv file
-	with open(file_name, 'r') as file:
-		lines = file.readlines()
-		# skip first line
-		for line in lines[1:]:
-			line = replace_quote(line)
-			info = line.split(',')
-			# add value to result
-			add_to_result(result, info[1], info[9])
-	# print result
-	for platform, sell in result.items():
-		print(platform + ': ' + str(sell))
+	for line in lines:
+		line = replace_quote(line)
+		info = line.split(',')
+		# add value to result
+		add_to_result(result, info[1], info[9])
+	return result
 
 if __name__ == '__main__':
-	calculate_sell_by_platform('./video-games.csv')
+	with open('video-games.csv', 'r') as file:
+		file.readline()
+		result = calculate_sell_by_platform(file)
+		# print result
+		for platform, sell in result.items():
+			print(platform + ': ' + str(sell))

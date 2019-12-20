@@ -1,0 +1,141 @@
+---
+title: "Analyse US Crime"
+author: "Rémi TANIEL"
+date: "12/18/2019"
+output:
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+setwd('/Users/remi/Documents/Cours/ML')
+```
+
+# Introduction
+
+On commence par importer nos données grâce au code suivant :
+
+```{r}
+data = read.table('us_crime.txt', header = TRUE)
+```
+
+On décide de regarder quelle est la taille de nos données :
+
+```{r}
+dim(data)
+```
+
+Nous avons donc un jeu de donnée de 47 observations pour 14 variables, on visualise nos données avec la fonction head :
+
+```{r}
+head(data)
+```
+
+Ainsi que leurs types :
+
+```{r}
+str(data)
+```
+
+On remarque que la variable S est en réalité un booléen pour savoir si l'état courant est un état du Sud (1) ou un état du Nord (0), nous devons indiquer que cette variable est une variable quantitative :
+
+```{r}
+data$S = as.factor(data$S)
+```
+
+On peut vérifier cela en réappelant la fonction str :
+
+```{r}
+str(data)
+```
+
+On cherche à maintenant à vérifier si il y a des valeurs manquantes dans notre jeu de données, on peut appeler la fonction summary :
+
+```{r}
+summary(data)
+```
+
+# Régression simple
+
+Nous allons maintenant effectuer une régression simple afin d'expliquer la variable R par rapport à la variable Ed
+
+## Création du modèle
+
+On utilise la fonction suivante afin de créer un modèle permettant d'expliquer la variable R par rapport à la variable Ed :
+
+```{r}
+model = lm(R~Ed, data = data)
+```
+
+## Qualité du modèle
+
+On cherche maintenant à vérifier la qualité de notre modèle, pour cela on utilise la fonction summary :
+
+```{r}
+summary(model)
+```
+
+La r^2 de notre modèle est de 0,08432, c'est à dire que la variable Ed explique 8,432% de l'information portée par la variable R, notre modèle n'est donc pas de très bonne qualité.
+On peut tracer le graphique suivant pour vérifier ce qu'on a dit précédemment :
+
+```{r}
+plot(data$Ed, data$R)
+abline(model, col = 'red')
+```
+
+## Validité du modèle
+
+On décide maintenant de vérifier la validité de notre modèle, pour cela on dispose de trois critères :
+
+- La normalité des résidus
+- L'indépendance des résidus
+- L'homoscédasticité des résidus
+
+Pour chacun de ces critères nous disposons de tests pour valider le critère ou non, pour que notre modèle soit valide, il faut que les 3 critères soient validés.
+
+### Normalité des résidus
+
+La normalité des résidus est vérifié par le test de Shapiro grâce à la fonction :
+
+```{r}
+shapiro.test(model$residuals)
+```
+
+La p-value étant de 0.02447, elle est donc inférieure à notre seuil d'acceptation qui est de 0.05, donc on rejette l'hypothèse
+
+On peut également tracer le graphique suivant pour vérifier la normalité des résidus :
+
+```{r}
+qqnorm(model$residuals)
+qqline(model$residuals, col = 'red')
+```
+
+Et on remarque que nos résidus ne sont pas normales étant donné que seule une partie de ceux-ci sont proche de la droite
+
+### Indépendance des résidus
+
+Pour tester l'indépendance des résidus, on utilise cette fois le test de Durbin-Watson :
+
+```{r}
+library(lmtest)
+dwtest(model)
+```
+
+Par rapport au test précédent, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse
+
+### Homoscédasticité des résidus
+
+Afin de vérifier l'homoscédasticité des résidus on utilise le test de Breusch-Pagan :
+
+```{r}
+bptest(model)
+```
+
+Comme pour la normalité des résidus, on rejette l'hypothèse car la p-value est inférieure à 0.05
+
+Ceci est confirmé par le graphique suivant :
+
+```{r}
+plot(model$residuals, xlab = "", ylab = "Résidus ", main = "Homoscédasticité de m0")
+```

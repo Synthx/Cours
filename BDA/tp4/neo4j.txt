@@ -1,0 +1,47 @@
+Question 1
+
+MATCH (p:Person) WHERE p.name = "Tom Hanks" return p;
+
+Question 2
+
+MATCH (m:Movie) WHERE m.title = "Cloud Atlas" return m;
+
+Question 3
+
+MATCH (p:Person) return p LIMIT 10;
+
+Question 4
+
+MATCH (m:Movie) WHERE m.released >= 1990 AND m.released <=1999 return m;
+
+Question 5
+
+MATCH (p:Person)-[:ACTED_IN]->(m:Movie) WHERE p.name = "Tom Hanks" return m;
+
+Question 6
+
+MATCH (p:Person)-[:DIRECTED]->(m:Movie) WHERE m.title = "Cloud Atlas" return p.name;
+
+Question 7
+
+MATCH (p:Person)-[:ACTED_IN]->(m:Movie)<-[:ACTED_IN]-(actor:Person) WHERE p.name = "Tom Hanks" return actor;
+
+Question 8
+
+MATCH (m:Movie)<--(p:Person) WHERE m.title = "Cloud Atlas" RETURN p;
+
+Question 9
+
+MATCH (p:Person)-[*..4]-(all) WHERE p.name = "Kevin Bacon" return distinct all;
+
+Question 10
+
+MATCH (first:Person), (second:Person), p = shortestPath((first)-[*]-(second)) WHERE first.name = "Kevin Bacon" AND second.name = "Meg Ryan" return p;
+
+Question 11
+
+MATCH (m:Movie), (first:Person)-[:ACTED_IN]->(m1)<-[:WROTE]-(co), (co)-[:WROTE]->(m2)<-[:WROTE]-(coco) WHERE first.name = "Tom Hanks" AND NOT (coco)-[:WROTE]->(m)<-[:ACTED_IN]-(first) return distinct coco
+
+Question 12
+
+MATCH (first:Person)-->(m)<--(actors), (actors)-->(m2)<--(last:Person) WHERE first.name = "Tom Hanks" AND last.name = "Tom Cruise" RETURN distinct actors;

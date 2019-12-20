@@ -1,0 +1,216 @@
+---
+title: "TP2"
+author: "Rémi Taniel"
+date: "13/12/2019"
+output:
+  pdf_document: default
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Introduction
+
+On commence tout d'abord par charger les données dans une variable data :
+
+```{r}
+data = as.data.frame(readxl::read_xls('debitmetrie.xls'))
+```
+
+On propose de regarder à quoi ressemble nos données :
+
+```{r}
+head(data)
+```
+
+On remarque que toutes nos variables sont des variables qualitatives, seule la variable id n'est pas à prendre à compte dans notre analyse, pour l'enlever on décide de l'utiliser pour nommer nos lignes :
+
+```{r}
+data <- data[,-1]
+head(data)
+```
+
+
+## Question 1
+
+On décide de proposer des statistiques univariées pour chacune de nos variables, dans un premier temps, on utilise la fonction suivante :
+
+```{r}
+summary(data)
+```
+
+On remarque que pour plusieurs variables (`fpg`, `fpd`, `tpg`, `tpd`, `card`) nous avons des données manquantes, il faudra y faire attention lors de nos prochaines analyses,
+Pour chacune de nos variables on décide de 
+
+```{r}
+stats = apply(data, 2, function(col) {
+  nb_obs = length(na.omit(col))
+  nb_na = length(col[is.na(col)])
+  min = min(col, na.rm = TRUE)
+  max = max(col, na.rm = TRUE)
+  mean = mean(col, na.rm = TRUE)
+  sd = sd(col, na.rm = TRUE)
+  
+  return(c(nb_obs, nb_na, min, max, mean, sd))
+})
+row.names(stats) = c('Nb obs.', 'Nb NA', 'Min', 'Max', 'Moyenne', 'Ecart type')
+knitr::kable(round(t(stats), 3), format = 'markdown', align = 'r')
+```
+
+```{r}
+hist(data$resul, xlab = 'RESUL', ylab = 'Fréquence', main = 'Répartition de la variable RESULT')
+```
+
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 2:ncol(data)) {
+  hist(data[,i], xlab = names(data)[i], ylab = 'Fréquence', main = paste('Répartition de la variable', names(data)[i]))
+}
+```
+
+## Question 2
+
+On décide ensuite de trouver les variables les plus corrélées avec la variable `RESUL` qui represente le résultat du test cognitif, pour cela nous allons utiliser un nuage de point :
+
+```{r}
+library(corrplot)
+corrplot::corrplot(cor(data$resul, data[,-1], use = 'pairwise.complete.obs'))
+```
+
+Les variables les plus corrélées avec la variable `RESUL` sont les variables :
+
+- `tpg` représentant le débit dans 
+- `carg` représentant le débit dans la carotide gauche
+- `card` représentant le débit dans la carotide droite
+
+Les valeurs précises sont obtenus grâce à la fonction suivante :
+
+```{r}
+cor(data$resul, data[,-1], use = 'pairwise.complete.obs')
+```
+
+Maintenant, on décide de présenter les statistiques bivariées de la variable `RESUL` par rapport aux autres variables :
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 2:ncol(data)) {
+  plot(data[,1], data[,i], xlab = 'RESULT', ylab = names(data)[i])
+}
+```
+
+## Question 3
+
+On réalise maintenant le modèle de régression linéaire simple entre la variable `RESUL` et la variable `card`, pour cela, on utilise la fonction `lm` :
+
+```{r}
+model = lm(resul~card, data = data)
+```
+
+### Qualité du modèle
+
+On explore les propriétés de notre modèle linéaire en appliquant la fonction `summary` :
+
+```{r}
+summary(model)
+```
+
+On a un r^2 égal à 46,85%, c'est à dire que la variable `card` explique 46.85% de l'information de la variable `RESUL`, notre modèle est donc de bonne qualité, ce qui n'est pas illogique vu que le coefficient de corrélation entre ces 2 variables est de 0.6844961
+
+### Validité du modèle
+
+On décide maintenant de vérifier la validité de notre modèle, pour cela on dispose de trois critères :
+
+- La normalité des résidus
+- L'indépendance des résidus
+- L'homoscédasticité des résidus
+
+#### Normalité des résidus
+
+La normalité des résidus est vérifié par le test de Shapiro grâce à la fonction :
+
+```{r}
+shapiro.test(model$residuals)
+```
+
+La p-value étant de 0.6702, elle est donc supérieure à 0.05, donc on ne rejette pas l'hypothèse
+
+On peut également tracer le graphique suivant pour vérifier la normalité des résidus :
+
+```{r}
+qqnorm(model$residuals)
+qqline(model$residuals, col = 'red')
+```
+
+
+#### Indépendance des résidus
+
+Pour tester l'indépendance des résidus, on utilise cette fois le test de Durbin-Watson :
+
+```{r}
+library(lmtest)
+dwtest(model)
+```
+
+Tout comme le test précédent, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse
+
+#### Homoscédasticité des résidus
+
+Afin de vérifier l'homoscédasticité des résidus on utilise le test de Breusch-Pagan :
+
+```{r}
+bptest(model)
+```
+
+Comme les 2 précédents tests, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse
+
+Ceci est confirmé par le graphique suivant :
+
+```{r}
+plot(model$residuals, xlab = "Carg", ylab = "Résidus ", main = "Homoscédasticité de m0")
+```
+
+
+### Influence des observations
+
+On décide d'étudier l'influence des observations sur l'estimation du modèle, pour cela on utilise le code suivant :
+
+```{r}
+influence = lm.influence(model)
+str(influence)
+```
+
+
+```{r}
+plot(influence$hat, xlab = 'Observations', ylab = 'Leviers', type = 'h')
+abline(h = 2/nrow(data), col = 'red')
+abline(h = 3/nrow(data), col = 'green')
+```
+
+Puis un graphique représentant les distances de Cook :
+
+```{r}
+plot(cooks.distance(model), xlab = 'Observations', ylab = 'Distances', type = 'h')
+```
+
+### Validation croisée
+
+Pour calculer le PRESS, on utilise la fonction suivante :
+
+```{r}
+press = sum((model$residuals / (1 - influence$hat))^2)
+press
+```
+
+On peut également calculer le REMSEP :
+
+```{r}
+sqrt((1 / length(model$residuals)) * press)
+```
+
+### Autres
+
+Réaliser la même analyse sur la base us_crime.txt afin d'expliquer la variable R (taux de criminalité) a partir de la variable Ed (education)
+
+## Question 4

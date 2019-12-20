@@ -1,0 +1,393 @@
+---
+title: 'Modèle Linéaire : séléction de modèle'
+author: "Rémi TANIEL"
+date: "12/18/2019"
+output: 
+  pdf_document:
+    toc: true
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, message = FALSE, warning = FALSE)
+setwd('/Users/remi/Documents/Cours/ML')
+```
+
+# Introduction
+
+On commence par importer nos données grâce au code suivant :
+
+```{r}
+data = read.table('cornell.csv', header = TRUE, sep = ',', dec = '.')
+```
+
+On décide de regarder quelle est la taille de nos données :
+
+```{r}
+dim(data)
+```
+
+On a donc 12 observations pour 8 variables, on peut décider de visualiser nos données grâce à la fonction head :
+
+```{r}
+head(data)
+```
+
+
+# Question 1
+
+## Statistiques descriptives univariées
+
+On décide de proposer des statistiques descriptives univariées pour chacune de nos variables, dans un premier temps, on utilise la fonction summary :
+
+```{r}
+summary(data)
+```
+
+On remarque dans un premier temps que nous n'avons pas de données manquantes dans notre jeu de donnée, et on remarque les choses suivantes :
+
+- Pour les variables X1, X3, X5 et X7, la plage entre la valeur minium et la valeur maximum est faible
+- Tandis que pour les variables X2, X4 et X6, cette même plage est très grande
+
+### Répartition des variables
+
+On décide également d'afficher la répartition de la variable Y grâce au graphique suivant :
+
+```{r}
+hist(data$Y, xlab = 'Y', ylab = 'Fréquence', main = 'Répartition de la variable Y', col = 'blue')
+```
+
+La majorité de nos variables sont donc comprises entre les intervalles [80;85] et [95;100]
+
+On décide de faire pareil pour le reste des variabes de notre jeu de donnée :
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 1:(ncol(data)-1)) {
+  hist(data[,i], xlab = names(data)[i], ylab = 'Fréquence', main = paste('Répartition de la variable', names(data)[i]), col = 'blue')
+}
+```
+
+On remarque que la réparition des variables X1, X3 et X5 sont très disparates, pour chacunes de ces variables il n'y aucune valeur au milieu de l'intervalle, les valeurs sont situés au minimum et à l'extremum de l'intervalle
+
+## Statistiques descriptives bivariées
+
+On va maintenant comparer la variable Y par rapport aux autres variables de notre problème
+
+### Corrélation
+
+On va dans un premier temps regarder quelles sont les variables qui sont les plus corrélées avec la variable Y, pour cela, on trace le graphique suivant :
+
+```{r}
+library(corrplot)
+corrplot::corrplot(cor(data$Y, data[,-8], use = 'pairwise.complete.obs'))
+```
+
+Grâce à ce graphique on remarque tout de suite les affirmations suivantes :
+
+- La variable X6 est très fortement positivement corrélée avec la variable Y
+- Les variables X1, X3, X4 et X7 sont très fortement négativement corrélées avec la variable Y
+- La variable X2 n'est quasiment pas corrélée avec la variable Y
+
+On peut obtenir les valeurs précises grâce au bout de code suivant :
+
+```{r}
+library(knitr)
+kable(cor(data$Y, data[,-8], use = 'pairwise.complete.obs'))
+```
+
+```{r}
+par(mfrow = c(2,2))
+for(i in 1:(ncol(data) - 1)) {
+  plot(data[,8], data[,i], xlab = 'Y', ylab = names(data)[i])
+}
+```
+
+# Question 2
+
+On réalise le modèle de régression entre Y et les autres variables en utilisant la fonction lm :
+
+```{r}
+m0 = lm(Y~., data = data)
+```
+
+Et on affiche les informations relatives à celui-ci :
+
+```{r}
+summary(m0)
+```
+
+On remarque plusieurs choses :
+
+- Le r^2 de notre modèle est égale à 0,9925, ce qui signifie que 99,25% de l'information portée par Y est expliquée par les autres variables, la qualité de notre modèle est donc excellente.
+- La ligne pour la variable X7 est NA pour tout les paramètres, ce qui signifie que cette variable est linéarement reliée à une variable.
+
+# Question 3
+
+On va vérifier maintenant que nos variables ne sont pas corrélées entre elles, c'est à dire qu'il n'y a pas de relation entre 2 d'entre elles.
+
+## Analyse en composantes principales
+
+Pour cela, nous avons plusieurs solutions qui s'offrent à nous, la première solution est de réaliser une ACP sur nos données :
+
+```{r}
+library(FactoMineR)
+pca = FactoMineR::PCA(data[,-8], scale.unit = TRUE, ncp = 7, graph = TRUE)
+```
+
+On remarque que la variable X7 est fortement positivement correlée avec la variable X4, tout comme les variables X1 et X3.
+
+## Conclusion
+
+Or nous avons déjà vu précédemment que la variable X7 est linéarement reliée à une autre variable de notre problème, on peut vérifier cela en calculant le determinant de la matrice XTX :
+
+```{r}
+X = as.matrix(data[,-8])
+det(t(X) %*% X)
+```
+
+Etant donné que le déterminant de la matrice peut être considéré comme nul, il existe donc des relations entre certaines variables
+
+# Question 4
+
+On ne peut donc pas faire de modèle prenant en compte toutes les variables, mais quelles sont les variables que nous devons enlever ?
+
+## Séléction de variables
+
+On procède dans un premier temps à une selection de variables en utilisant la fonction regsubsets contenue dans la librairie leaps, on choisira le meilleur modèle selon le critère BIC
+
+```{r}
+library(leaps)
+choix = regsubsets(Y~., int = T, nbest = 1, nvmax = 7, method = 'exh', data = data)
+plot(choix, scale = 'bic')
+```
+
+Le meilleur modèle est donc celui qui fait rentrer les 3 variables suivantes :
+
+- X1
+- X4
+- X6
+
+```{r}
+model = lm(Y~X1+X4+X6, data = data)
+```
+
+## Qualité du modèle
+
+On obtient les informations du modèle grâce à la fonction summary :
+
+```{r}
+summary(model)
+```
+
+Le r^2 de ce modèle est de 0,9882, ce qui signifie que 98,82% de l'information portée par la variable Y est expliquée par les variables X1, X4 et X6
+
+## Validation du modèle
+
+On décide maintenant de vérifier la validité de notre modèle, pour cela on dispose de trois critères :
+
+- La normalité des résidus
+- L'indépendance des résidus
+- L'homoscédasticité des résidus
+
+### Normalité des résidus
+
+La normalité des résidus est vérifié par le test de Shapiro grâce à la fonction :
+
+```{r}
+shapiro.test(model$residuals)
+```
+
+La p-value étant de 0.9747, elle est donc supérieure à 0.05, donc on ne rejette pas l'hypothèse.
+
+On peut également tracer le graphique suivant pour vérifier la normalité des résidus :
+
+```{r}
+qqnorm(model$residuals)
+qqline(model$residuals, col = 'red')
+```
+
+On remarque que les points suivent la courbe donc les résidus sont donc normales.
+
+### Indépendance des résidus
+
+Pour tester l'indépendance des résidus, on utilise cette fois le test de Durbin-Watson :
+
+```{r}
+library(lmtest)
+dwtest(model)
+```
+
+Tout comme le test précédent, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse.
+
+### Homoscédasticité des résidus
+
+Afin de vérifier l'homoscédasticité des résidus on utilise le test de Breusch-Pagan :
+
+```{r}
+bptest(model)
+```
+
+Comme les 2 précédents tests, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse
+
+Ceci est confirmé par le graphique suivant :
+
+```{r}
+plot(model$residuals, xlab = "", ylab = "Résidus ", main = "Homoscédasticité de m0")
+```
+
+## Performance du modèle
+
+On rappelle les informations de notre modèle grâce à la fonction suivante :
+
+```{r}
+summary(model)
+```
+
+## Nouveau modèle avec 2 variables
+
+```{r}
+choix_2 = regsubsets(Y~., int = T, nbest = 1, nvmax = 2, method = 'exh', data = data)
+plot(choix_2, scale = 'bic')
+```
+
+Le meilleur modèle avec 2 variables est le modèle en fonction des variables X6 et X7
+
+## Création du modèle
+
+On crée donc le modèle en utilisant le résultat précédent :
+
+```{r}
+model_2 = lm(Y~X6+X7, data = data)
+```
+
+Comme précédemment on cherche à estimer le modèle et à analyser la validité de celui-ci
+
+## Qualité du modèle
+
+On obtient les informations du modèle grâce à la fonction summary :
+
+```{r}
+summary(model_2)
+```
+
+Le r^2 de ce modèle est de 0,983, ce qui signifie que 98,30% de l'information portée par la variable Y est expliquée par les variables X6 et X7.
+
+## Validation du modèle
+
+On décide maintenant de vérifier la validité de notre modèle, pour cela on dispose de trois critères :
+
+- La normalité des résidus
+- L'indépendance des résidus
+- L'homoscédasticité des résidus
+
+### Normalité des résidus
+
+La normalité des résidus est vérifié par le test de Shapiro grâce à la fonction :
+
+```{r}
+shapiro.test(model_2$residuals)
+```
+
+La p-value étant de 0.7142, elle est donc supérieure à 0.05, donc on ne rejette pas l'hypothèse.
+
+On peut également tracer le graphique suivant pour vérifier la normalité des résidus :
+
+```{r}
+qqnorm(model_2$residuals)
+qqline(model_2$residuals, col = 'red')
+```
+
+On remarque que les points suivent la courbe donc les résidus sont donc normales.
+
+### Indépendance des résidus
+
+Pour tester l'indépendance des résidus, on utilise cette fois le test de Durbin-Watson :
+
+```{r}
+library(lmtest)
+dwtest(model_2)
+```
+
+Tout comme le test précédent, la p-value est supérieure à 0.05 donc on ne rejette pas l'hypothèse.
+
+### Homoscédasticité des résidus
+
+Afin de vérifier l'homoscédasticité des résidus on utilise le test de Breusch-Pagan :
+
+```{r}
+bptest(model_2)
+```
+
+Comme les 2 précédents tests, la p-value est supérieure à 0.05 (0.9068) donc on ne rejette pas l'hypothèse
+
+Ceci est confirmé par le graphique suivant :
+
+```{r}
+plot(model_2$residuals, xlab = "", ylab = "Résidus ", main = "Homoscédasticité de m0")
+```
+
+# Question 5
+
+Dans la question précédente, on a utilisé le critère BIC, nous allons donc rechoisir le meilleur modèle en utilisant 2 nouveaux critères :
+
+- critère Cp
+- critère du R^2 ajuste
+
+## Critère du Cp
+
+```{r}
+plot(choix, scale = 'Cp')
+```
+
+Suivant ce critère, on retrouve le même modèle que précédemment, c'est à dire un modèle en fonction de X1, X4 et X6
+
+## Critère du R^2 ajusté
+
+```{r}
+plot(choix, scale = 'adjr2')
+```
+
+Comme précédemment, on retrouve également le même modèle qu'obtenu avec les 2 derniers critères, c'est à dire un modèle avec X1, X4 et X6.
+
+## Critère du R^2
+
+```{r}
+plot(choix, scale = 'r2')
+```
+
+Contrairement aux 3 critères précédents, le meilleur modèle avec le critère du R^2 est en fonction de toutes les variables sauf X7.
+
+# Question 6
+
+Les recheches précédentes étaient exhaustives, or cela pose problème lorsque nous avons un jeu de donnée avec de nombreuses variables, pour éviter ce problème, on utilise une séléction pas-à-pas, nous allons donc créer 3 modèles en utilisant des directions différentes :
+
+- descendante
+- ascendante
+- les 2
+
+```{r, echo=TRUE, results='hide'}
+library(MASS)
+m_0 = lm(Y~1, data = data)
+m_all = lm(Y~., data = data)
+
+m_back = stepAIC(m_all, direction = "backward")
+m_forw = stepAIC(m_0, direction = "forward", scope = list(upper = m_all, lower = m_0))
+m_stepwise = stepAIC(m_0, direction = "both", scope = list(upper = m_all, lower = m_0))
+```
+
+Ensuite, nous allons comparer les 3 modèles en utilisant le PRESS, calculer grâce à la fonction suivante :
+
+```{r}
+press = function(fit) {
+  h = lm.influence(fit)$h
+  return(sqrt(mean((residuals(fit) / (1 - h))^2)))
+}
+```
+
+On calcule donc le PRESS pour chacun de nos modèles précédents :
+
+```{r}
+c(press(m_back), press(m_forw), press(m_stepwise))
+```
+
+Le modèle avec le pouvoir prédictif le plus élevé est donc le modèle formé avec la méthode pas-à-pas AIC avec une direction ascendante
