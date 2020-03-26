@@ -1,0 +1,348 @@
+---
+title: 'Cours / TP d''analyse factorielle discriminante'
+output:
+  pdf_document:
+    number_sections: yes
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE, eval = TRUE)
+```
+
+# Rappel sur l'ACP 
+
+L'ACP cherche les **composantes principales** $C_1$, $C_2$, ..., $C_d$ expliquant aux mieux la **variance du nuage de points** défini par les variables $X_1$, $X_2$, ..., $X_d$. 
+
+La **première composante principale $C_1$** est définie par : 
+$$
+C_1 = a_1 X_1 + a_2 X_2 + \cdots + a_p X_p
+$$
+
+On cherche les **coefficients** $a_1$, ..., $a_d$, minimisant la variance de $C_1$. 
+
+La variance de $C_1$ s'écrit : 
+$$
+V(C_1) = V(a_1 X_1 + a_2 X_2 + \cdots + a_p X_p)
+$$
+Il s'agit de la **variance d'une combinaison linéaire** de variables.
+
+En notant $a = (a_1, \ldots, a_d)^{T}$ et $X = (X_1, \ldots, X_d)^{T}$. On a :
+$$
+V(C) = V(a^T X) = a^T . V(X) .  a
+$$
+où $V = V(X)$ est la matrice de variance covariance du vecteur aléatoire $X$. L'entrée $ij$ de la matrice est 
+$$
+V_{ij} = \mbox{cov}(X_i,X_j)
+$$
+
+Exemple sur les données `iris` : 
+```{r}
+data(iris)
+names(iris) = c("X1","X2","X3","X4","Y")
+```
+
+La matrice de variance covariance est : 
+```{r}
+cov(iris[,1:4])
+```
+
+en fait plus précisément la fonction `cov` calcule la variance débiaisée (en divisant par $n-1$), là où la présentation dans le cours est en divisant par $n$. 
+
+On peut écrire une fonction `cov.p` pour régler ce problème : 
+```{r}
+cov.p <- function(x){
+  cov(x) * (nrow(x) - 1)/nrow(x)
+}
+```
+de même on peut écrire une fonction `var.p`
+```{r}
+var.p <- function(x){
+  var(x) * (length(x) - 1)/length(x)
+}
+```
+
+Et donc : 
+```{r}
+V = cov.p(iris[-5])
+V
+```
+Ainsi $\mbox{cov}(X_1, X_2) = -0,042$.
+
+Par exemple on peut s'intéresser à la variance de $3 X_1 + 2X_2 + X_3 + X_4$ 
+
+```{r}
+a = matrix(c(3, 2, 1, 1))
+a
+composante = as.matrix(iris[-5]) %*% a
+var.p(composante)
+```
+Dont la variance est égale à $21,5$. Qu'on peut retrouver comme suit : 
+```{r}
+t(a) %*% V %*% a
+```
+
+$C_1$ se trouve en résolvant le problème de maximisation : 
+$$
+a = \arg\mbox{max}_{a} V(a^T X) = a^T . V . a 
+$$
+sous la contrainte $\|a \| = 1$.
+
+On montre que la solution de ce problème consiste à résoudre :
+$$
+V a = \lambda_1 a
+$$
+avec $\lambda_1$ la plus grande valeur propre de la matrice $V$. Ainsi on trouve $a$ comme vecteur propre associé à la plus grande valeur propre de $V$.
+
+Le principe est le même pour les valeurs propres suivantes.
+
+Dans R la diagonalisation se fait simplement à l'aide de la fonction `eigen`
+```{r}
+res= eigen(V)
+res
+```
+
+Le champ `values` nous donnes les valeurs propres et le champ `vectors` les vecteurs propres en colonne. 
+
+Ainsi la combinaison linéaire de plus forte variance est : 
+$$
+C_1 = 0.3614 \times X_1-0.0845 \times X_2 + 0.8567 \times X_3 + 0.3583 \times X_4
+$$
+
+L'ensemble des composante principales peut simplement s'obtenir à partir du produit matriciel entre le tableau de donnée et la matrice des vecteurs propres : 
+```{r}
+C = as.matrix(iris[-5]) %*% res$vectors
+head(C)
+```
+La variance de chacun des composantes principales s'obtient comme suit : 
+```{r}
+apply(C, 2, var.p)
+```
+et on retrouve justement les valeurs propres de $V$ ... 
+```{r}
+res$values
+```
+
+Le nuage de points est le suivant : 
+```{r}
+library(ggplot2)
+colnames(C) = paste0("C",1:4)
+ACP = cbind.data.frame(C,Y = iris$Y)
+ggplot(ACP, aes(x = C1, y = C2, color = Y, shape = Y)) + geom_point()
+```
+
+Globalement les classes sont bien séparées, cependant on doit pouvoir faire mieux. Aussi le $R^2_{C_1/Y}$ est égal à :  
+```{r}
+summary(lm(C1 ~ Y, data = ACP))$r.squared
+```
+
+Ce qui est moins bien que $R^2_{X_3/Y} = 94,1\%$. On doit pouvoir trouver des combinaisons linéaires qui font mieux ... 
+
+**Remarque :** cela sort du cadre du cours mais idéalement on utiliserait plutôt le package `FactoMineR` pour faire l'ACP.
+
+
+# L'analyse factorielle discriminante (AFD)
+
+Ici on cherche aussi des combinaisons linéaires des variables $X_1$, ..., $X_d$ comme en ACP mais on cherche les composantes pour lesquelles les **classes sont les mieux séparées**. 
+
+## Décomposition de la variance
+
+Les effectifs des classes sont obtenus comme suit : 
+```{r}
+ni = table(iris$Y)
+ni
+```
+
+La matrice $G$ des moyennes dans chacune des classes s'obtient par : 
+```{r}
+G = t(simplify2array(by(iris[,1:4],iris$Y, colMeans)))
+G
+```
+
+On en déduit la matrice de variance inter-classe $B$ qui est la matrice de covariance de la matrice $G$ en **pondérant** chaque ligne par l'effectif de la classe. Ce qui peut être fait facilement à partir de la fonction `cov.wt`
+```{r}
+B = cov.wt(G, wt = as.vector(ni), method = "ML")$cov
+```
+`wt` sont les poids à donner à chacune des ligne. `method = "ML"` précise qu'il utilise l'estimateur du maximum de vraisemblance (Maximum Likelihood) qui correspond à diviser par l'effectif $n$ (en non pas $n-1$ qui correspondrait à l'option "unbiaised").
+
+
+La variance intra-classes $W$ se calcule comme moyenne pondérée des variances intra-classe groupe par groupe : 
+```{r}
+Wi = by(iris[-5], iris$Y, cov.p)
+Wi
+```
+donnes les matrices de variance covariance dans chacun des groupes. 
+
+
+
+Et on en déduit $W = \frac{n_1W_1 + n_2W_2 + n_3W3}{n}$ :
+```{r}
+W = Reduce('+',Map('*',Wi,ni))/sum(ni)
+W
+```
+Informatiquement la fonction `Map` permet de multiplier chaque élément de la liste `Wi` par chaque élément du vecteur `ni`. La fonction réduce permet d'en faire la somme, et enfin on divise par l'effectif total.
+
+On vérifie que $V = B + W$ : 
+```{r}
+norm(V - (B+W))
+```
+Ainsi l'écart entre la matrice `V` et la matrice `B + W` est très faible $10^{-15}$.
+
+
+## But de l'AFD
+
+Le but de l'AFD est de trouver les composantes discrimantes $D_1$, ... la première composante discriminante est recherchée de sorte à maximiser la part de la variance de de la composante expliquée par $Y$ ($R_{D_1/Y}^2$).
+
+$$
+\arg\max_{a} R_{D_1/Y}^2 = \arg\max_{a} \frac{V_Y[E(D_1 | Y)]}{V(D_1)} = \arg\max_{a} \frac{V_Y[E(a^T X | Y)]}{V(a^T X)} = \arg\max_{a} \frac{a^T. B .a}{a^T .V . a}
+$$
+On montre qu'on trouve $a$ en cherchant le **vecteur propre** associé à la plus grande valeur propre de $V^{1}B$. Par ailleurs comme $V = B + W$ on montre que ce problème est équivalent à chercher le vecteur propre associé à la plus grande valeurs propre de $W^{-1}B$. 
+
+**Attention :** même si les matrices $V^{-1}B$ et $W^{-1}B$ ont les mêmes vecteurs propres, ils n'ont cependant pas les mêmes valeurs propres. Soit $v_1$ le vecteur :  propres associé à la plus grande valeurs propres on a : 
+
+$V^{-1}B v_1 = \lambda_1 v_1$ et $W^{-1}B v_1 = \mu_1 v_1$, quel est le lien entre $\lambda_1$ et $\mu_1$ ??? 
+
+Les nombre de valeurs propres non nulles est égal à $\min (K-1, p)$. 
+
+Ici on à $K = 3$ classes et on est en dimension $d = 4$ donc on a au plus $2$ valeurs propres non nulles, donc deux composantes discriminantes.
+
+On peut les trouver comme suit : 
+```{r}
+res2 = eigen(solve(V) %*% B)
+res2
+```
+Ici la première valeur propre est égale à $96,9\%$ ce qui réprésente la part de variance expliquée par la première composante discriminante : $R_{D_1/Y}^2= 96,9\%$
+
+Et on calcule la composante comme suit : 
+```{r}
+D = as.matrix(iris[-5]) %*% res2$vectors
+colnames(D) = paste0("D",1:4)
+AFD = cbind.data.frame(D,Y = iris$Y)
+ggplot(AFD, aes(x = D1, y = D2, color = Y, shape = Y)) + geom_point()
+```
+
+On peut aussi calculer $R_{D_1/Y}^2$ comme suit : 
+```{r}
+summary(lm(D1 ~ Y, data = AFD))$r.squared
+```
+
+**Attention :** selon le logiciel la matrice diagonalisée peut être $V^{-1}B$ ou $W^{-1}B$, attention à l'interprétation des valeurs propres ...
+
+
+**Remarque :** Dans ce qui a été présenté en ici on a fait des AFD et ACP non centrée (le variables non pas été recentrées), le nuage de point obtenu est même qu'habituellement à une translation près. 
+
+
+En pratique, les coefficients permettant de la combinaison linéaire sont simplement obtenu comme suit : 
+```{r}
+K = nlevels(iris$Y)
+library(MASS)
+coeff = lda(Y ~ ., data = iris, prior = rep(1/K, K))$scaling
+coeff
+```
+
+Ces coefficient sont déterminés de telle sorte que les variances intra-classe de chaque composante discriminante soit égale à 1, $a^T W a = 1$   (mais il ici le variance sans biais, d'où la fonction `cov` usuelle): 
+
+```{r}
+proj_v2 = cbind.data.frame(as.matrix(iris[-5]) %*% coeff, iris$Y)
+names(proj_v2) = c("D1","D2", "Y")
+head(proj_v2)
+Wiproj = by(proj_v2[,1:2], proj_v2$Y, cov)
+Wproj = Reduce('+',Map('*',Wiproj,ni))/sum(ni)
+Wproj
+t(coeff) %*% W %*% coeff # idem (au facteur (n-1)/n près)
+```
+
+# Règle de décision : score linéaire
+
+La partie précédente est essentiellement descriptive, elle peut cependant être utilisée pour faire de la prédiction à l'aide de la règle pour une nouvelle donnée $x$ :  
+
+$$
+\hat y = \arg \max_{i\in \{1, \ldots, K\}} (x - \bar{X}_i)^T W^{-1} (x - \bar{X}_i)
+$$
+
+cela consiste à classer dans le classe la plus proche au sens de la **métrique de Mahalanobis**.
+
+On montre que cette règle est équivalente à maximiser : 
+$$
+\arg\max_i  x' 2 W^{-1} \bar{X}_i - \bar{X}_i' W^{-1}\bar{X}_i = \arg\max_i s_i(x)
+$$
+avec $s_i(x) = \alpha_{0i} + \alpha_{i1}x_1 + \cdots + \alpha_{ip}x_{p}$
+
+avec $\alpha_{i0} = - \bar{X}_i' W^{-1} \bar{X}_i$ et 
+$$
+\begin{pmatrix} \alpha_{i1} \\ \vdots \\ \alpha_{ip} \end{pmatrix} = 2 W^{-1} \bar{X}_i
+$$
+
+Construire le tableau des coefficients :
+\begin{center}
+\begin{tabular}{|r|c|c|c|}
+\hline
+& Setosa & Versicolor & Virginica \\
+\hline
+$\alpha_0$ & $\alpha_{10}$ & $\alpha_{20}$ & $\alpha_{30}$ \\
+$X_1 : \alpha_1$ & $\alpha_{11}$ & $\alpha_{21}$ & $\alpha_{31}$ \\
+$X_2 : \alpha_2$ & $\alpha_{12}$ & $\alpha_{22}$ & $\alpha_{32}$ \\
+$X_3 : \alpha_3$ & $\alpha_{13}$ & $\alpha_{23}$ & $\alpha_{33}$ \\
+$X_4 : \alpha_4$ & $\alpha_{14}$ & $\alpha_{24}$ & $\alpha_{34}$ \\
+\hline
+\end{tabular}
+\end{center}
+
+
+Exemple à la main : 
+```{r}
+i = 1 # Classe 1 (setosa)
+dim(G[i,])
+dim(G[i,,drop = FALSE])
+Xi <- matrix(G[i,],4,1)
+# Xi <- t(G[i,,drop = FALSE])
+- t(Xi) %*% solve(W) %*% Xi  # Premier alpha_{i0}
+2 * solve(W) %*% Xi # Les 4 autres ! 
+# Ou directement dans un tableau : 
+c(- G[1,,drop=F] %*% solve(W) %*% t(G[1,,drop=F]),
+    2 * solve(W) %*% t(G[1,,drop=F]))
+```
+
+Automatisable avec un sapply : 
+```{r}
+A = sapply(levels(iris$Y), function(k) {
+  c(- G[k,,drop=F] %*% solve(W) %*% t(G[k,,drop=F]),
+    2 * solve(W) %*% t(G[k,,drop=F]))
+})
+A
+```
+
+On déduite les scores dans chacune des classes pour chacun des individus : 
+```{r}
+scores = cbind(1,as.matrix(iris[-5])) %*% A
+# On rajoute une colonne de 1 dans les données pour prendre en compte l'intercept dans le calcul du score
+head(scores)
+```
+
+Enfin on en déduit la classe prédite par : 
+```{r}
+Yp = apply(scores, 1, function(x) names(which.max(x)))
+```
+
+Qu'on peut comparer avec la vraie classe : 
+
+```{r}
+table(iris$Y, Yp)
+```
+
+
+# Exercice d'application sur les données glass 
+
+L'objectif est de prédire le type de verre, variable `Type` en fonction des autres variables explicatives.
+
+```{r}
+glass = read.csv("https://archive.ics.uci.edu/ml/machine-learning-databases/glass/glass.data", header = FALSE)
+names(glass) <- c("RI","Na","Mg","Al","Si","K","Ca","Ba","Fe","Type")
+glass = glass[-1] # suppression de la première variable qui sert d'identifiant
+summary(glass)
+```
+
+1. Faire une ACP sur les données `glass`
+2. Faire une AFD sur les données `glass`
+3. Comparer aux résultats de l'ACP
+4. Utiliser un score linéaire pour calculer la prédiction et comparer à la valeur réelle.
