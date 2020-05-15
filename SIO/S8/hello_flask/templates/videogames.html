@@ -1,0 +1,18 @@
+<table>
+	<thead>
+		<tr>
+			{% for i in header %}
+			<th>{{ i }}</th>
+			{% endfor %}
+		</tr>
+	</thead>
+	<tbody>
+		{% for game in games %}
+		<tr>
+			{% for data in game %}
+			<td>{{ data }}</td>
+			{% endfor %}
+		</tr>
+		{% endfor %}
+	</tbody>
+</table>
