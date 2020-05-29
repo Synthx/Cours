@@ -1,0 +1,68 @@
+---
+title: 'Classification Automatique : Projet'
+author: "Rémi TANIEL"
+date: "5/20/2020"
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+## Question 1 : Analyse et traitement des données
+
+On commence par charger et visualier une partie du jeu de données contenant des caractéristiques d'appareil photos :
+
+```{r}
+data <- read.csv("/Users/remi/Downloads/Camera.csv", header = TRUE, sep = ";")
+
+head(data)
+```
+
+On remarque que notre premiere colonne est le nom et on peut donc la supprimer :
+
+```{r}
+rownames(data) <- data[,1]
+data <- data[,-1]
+```
+
+
+On décide ensuite d'analyser notre jeu de données : 
+
+```{r}
+summary(data)
+```
+
+Nos variables sont exclusivement quantitatives à part la variable "Release.date" qui est quanlitative représentant la date de sortie de notre modèle d'appareil photo :
+
+```{r}
+
+```
+
+on remarque que notre jeu de données contient également des valeurs NA, on supprime donc ces valeurs :
+
+
+
+## Question 2 : Implémentation de l'algorithme k-means
+
+On décide ensuite d'implémenter l'algorithme k-means vu en cours
+
+```{r}
+
+```
+
+
+## Question 3 : Application à notre jeu de données
+
+On applique cet algorithme à notre jeu de données pour proposer une segmentation adéquate :
+
+## Question 4 : Algorithme k-means de R
+
+Cette fois-ci on propose une segmentation à partir de la méthode des k-means de R :
+
+```{r}
+m <- kmeans(data, centers = 3)
+```
+
+
+
