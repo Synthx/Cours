@@ -1,0 +1,241 @@
+---
+title: "Projet CS"
+author: "TANIEL Rémi - GIS2A4"
+output: 
+  pdf_document: 
+    toc: yes
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+# Traitements préliminaires
+
+## Chargement des données
+
+On commence par charger les données contenu dans le fichier `hepatite.Rda`:
+
+```{r}
+load("./hepatite.Rda")
+```
+
+##Résumer les données
+
+Pour résumer les données, on peut utiliser la fonction `str` qui renseigne le nombre d'observations / variables, et qui pour chaque variable donne son type et quelques exemples de valeurs prises :
+
+```{r}
+str(d)
+```
+
+On remarque donc que notre dataframe contient donc 155 observations pour 20 variables dont 13 variables qualitatives: `class`, `sex`, `steriod`, `antivirals`, `fatigue`, `malaise`, `anorexia`, `liver_big`, `liver_firm`, `spleen_palpable`, `spiders`, `asites`, `varices` et `histology`
+
+On peut également faire un `summary` afin de savoir si notre jeu de données contient des valeurs manquantes / indéfinis `NA`:
+
+```{r}
+summary(d)
+```
+
+## Données pouvant poser un problème
+
+On remarque que la plupart de nos variables contiennent des valeurs non définis `NA`, de plus nos variables ne sont pas toutes du même type.
+
+# Ajustement d'un premier modéle de régression logistique
+
+## Ajustement des NA's
+
+On décide de voir ce que fait la fonction `glm` pour les valeurs `NA`, on s'aide donc de la documentation de celle-ci :
+
+```{r}
+help(glm)
+```
+
+Suivant la documentation, on utilise le paramètre `na.action` pour définir comment sont gérés les NA's, ce paramètre prends différentes valeures :
+* `na.omit` / `na.exclude`: les observations ayant des valeurs manquantes seronts supprimées
+* `na.pass`: n'effectue aucun changement sur le jeu de données
+* `na.fail` (par défaut): lève une exception si le jeu de données contient des valeurs manquantes
+
+On décide de former un nouveau de données en enlevant les observations contenant des valeurs manquantes :
+
+```{r}
+d2 <- na.omit(d)
+str(d2)
+```
+
+On obtient alors plus que 80 variables sur nos 155 de base
+
+## Avantages / Inconvénients
+
+Le plus gros avantage de cette stratégie est la facilité et la suppression du biais liés aux données manquantes, seulement, on perds énormément de données et donc d'information avec cette stratégie puisque dès qu'une observation possède une donnée manquante on décide de la supprimer, dans notre cas on supprime quasiment 50% des observations avec cette stratégie.
+
+Comme autres stratégies on pourrait utiliser un indicateur statistique ou une régression linéaire sur nos variables quantitatives.
+
+## Prédiction de la variable class
+
+### Création du modèle
+
+On réalise un premier modèle qui explique la variable `class` en fonction de toutes les autres variables :
+
+```{r warning=FALSE}
+m1 <- glm(formula = class~., data=d2, family=binomial(link="logit"))
+summary(m1)
+```
+
+Puis nous allons ensuite utiliser une méthode step by step afin d'ajouter/retirer des variables explicative dans le but de minimiser le critère AIC de notre modèle :
+
+```{r warning=FALSE, echo=TRUE, results='hide'}
+m2 <- step(m1)
+```
+
+Et on affiche le résumé de notre second modèle :
+
+```{r}
+summary(m2)
+```
+
+On remarque que la p-value de chacune des variables retenus n'est pas significative, ce qui signifie qu'il n'y a pas de lien entre les variables explicatives et la variable à expliquer, notre modèle n'est pas forcément pertinent
+
+### Vérification des performances
+
+Nous allons maintenant vérifier les performances de notre modèle grâce à divers indicateurs (Se, Sp, TBC, Courbe ROC, etc...), on commence donc par créer des fonctions qui vont nous permettre de calculer ces indicateurs :
+
+```{r}
+se <- function(mat) {
+  mat[2,2] / (mat[2,2] + mat[2,1]) 
+}
+
+sp <- function(mat) {
+  mat[1,1] / (mat[1,1] + mat[1,2])
+}
+
+tbc <- function(mat) {
+  (mat[1,1] + mat[2,2]) / sum(mat)
+}
+```
+
+Appliquées à nos résultats, on obtient :
+
+```{r}
+mat_conf <- table(
+  factor(ifelse(
+    predict(m2, d2[-1]) > 0.5,
+    1,
+    0)), 
+  d2$class)
+
+paste('Se (Sensibilité) =', se(mat_conf))
+paste('Sp (Spécificité) =', sp(mat_conf))
+paste('TBC (Taux Bien Classé) =', tbc(mat_conf))
+```
+
+On remarque que tous les indicateurs sont parfaits, on pourrait être dans un cas du surapprentissage des données, nous allons vérifier cela en traçant la courbe ROC,
+Pour afficher la courbe ROC, on va utiliser la librairie `ROCR` et la fonction suivante :
+
+```{r}
+library(ROCR)
+
+roc <- function(model, data) {
+  pred <- prediction(model$y, as.integer(data$class))
+  perf <- performance(pred, 'tpr', 'fpr')
+  return(perf)
+}
+```
+
+La courbe ROC de notre modèle est la suivante :
+
+```{r}
+plot(roc(m2, d2))
+```
+
+Notre classification est parfait, c'est à dire que le point (0,1) est atteint, cela s'explique par ce qu'on a vu précédemment, c'est à dire qu'il n'y a pas de corrélation entre les variables explicatives et la variable à expliquer, on peut parler du surapprentissage de notre modèle
+
+# Ajustement d'une régression logistique sur le jeu de données augmenté
+
+Le but de cette partie est d'éviter le surapprentissage de notre modèle, pour cela nous devons avoir plus d'individus pour établir notre modèle, on va donc au lieu d'enlever les individus ayant des valeurs manquantes `NA` essayer de prédire ces valeurs manquantes
+
+Rappel du nombre de valeurs manquantes par variables :
+
+```{r}
+colSums(is.na(d))
+```
+
+## Modèle de prédiction de la variable `protime`
+
+On va prédire la variable `protime` avec une régression linéaire en utilisant la même méthode que pour la variable `class` :
+
+```{r warning=FALSE, echo=TRUE, results='hide'}
+m3 <- lm(formula = protime~., data = d2)
+m4 <- step(m3)
+```
+
+On obtient donc le modèle suivant :
+
+```{r}
+summary(m4)
+```
+
+## Estimation de la variable `protime`
+
+Maintenant que nous avons construit le modèle de prédiction, nous allons estimer les différentes valeurs de cette variable :
+
+```{r}
+estimation <- predict(m4, d)
+print(estimation)
+```
+
+Et on peut maintenant remplacer les valeurs manquantes par nos estimations :
+
+```{r}
+d$protime[is.na(d$protime)] = estimation[is.na(d$protime)]
+```
+
+Et on créer un nouveau jeu de données avec nos estimations :
+
+```{r}
+d3 <- na.omit(d)
+summary(d3)
+```
+
+On décide de regarder si nous avons plus d'individus que notre jeu de données `d2` :
+
+```{r}
+dim(d3)
+```
+
+## Nouveau modèle de prédiction de la variable `class`
+
+Nous allons construire un nouveau modèle de prédiction de la variable `class` à partir de notre jeu de données `d3`, on va utiliser la même méthode que vu précédemment :
+
+```{r warning=FALSE, echo=TRUE, results='hide'}
+m5 <- glm(formula = class~., data = d3, family = binomial(link = 'logit'))
+m6 <- step(m5)
+```
+
+On obtient le modèle suivant :
+
+```{r}
+summary(m6)
+```
+
+On va maintenant vérifier les perfomances de notre nouveau modèle :
+
+```{r}
+mat_conf <- table(
+  factor(ifelse(
+    predict(m6, d3[-1]) > 0.5,
+    1,
+    0)), 
+  d3$class)
+
+paste('Se (Sensibilité) =', se(mat_conf))
+paste('Sp (Spécificité) =', sp(mat_conf))
+paste('TBC (Taux Bien Classé) =', tbc(mat_conf))
+```
+
+On obtient des valeurs qui sont plus cohérentes que précédemment, les indicateurs ne sont plus parfaits mais restent performants, Et on décided'afficher la courbe ROC associée :
+
+```{r}
+plot(roc(m6, d3))
+```
+
+On obtient toujours une courbe ROC parfaite, or cela ne semble pas cohérent étant donné que nos indicateurs Se, Sp et TBC ne sont plus parfaits
